@@ -1,0 +1,1639 @@
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+      name:  main
+       log:  C:/Users/Salvatore/Downloads/milano_housing_stata/milano_housing/output/logs/run_01_05.log
+  log type:  text
+ opened on:  20 Nov 2026, 14:40:12
+
+. di as txt "Avvio: `c(current_date)' `c(current_time)'  -  Stata `c(stata_version)'"
+Avvio: 20 Nov 2026 14:40:12  -  Stata 19.5
+
+. do "$CODE/01_import_irpef.do"
+
+. *==============================================================================*
+. * 01_import_irpef.do
+. * Redditi e principali variabili IRPEF su base sub-comunale, anni d'imposta
+. * 2019-2024, 38 CAP. Ogni file e' in formato lungo: anno - CAP - voce - importo.
+. * Le intestazioni cambiano tra anni (Importi/Valori, IRPEF/Irpef, apostrofi
+. * doppi nel 2024, spazi finali), quindi le voci vengono normalizzate.
+. *
+. * Output: $WORK/irpef_long_all.dta  tutte le voci (chiave anno-CAP-voce)
+. *         $WORK/irpef_cap_year.dta  CAP x anno con le variabili usate
+. *         $WORK/irpef_city_year.dta totali cittadini per anno
+. *==============================================================================*
+. version 16
+
+. di as txt _n "{hline 78}" _n "01 - IMPORT IRPEF PER CAP" _n "{hline 78}"
+
+------------------------------------------------------------------------------
+01 - IMPORT IRPEF PER CAP
+------------------------------------------------------------------------------
+
+. 
+. tempfile acc
+
+. local first 1
+
+. 
+. forvalues y = 2019/2024 {
+  2.     local f "$RAW/${F_IRPEF_STUB}`y'.csv"
+  3.     capture confirm file "`f'"
+  4.     if _rc local f "$RAW/${F_IRPEF_STUB}`y' (1).csv"
+  5.     capture confirm file "`f'"
+  6.     if _rc {
+  7.         di as error "File IRPEF per l'anno `y' non trovato in $RAW"
+  8.         exit 601
+  9.     }
+ 10.     imp_csv using "`f'"
+ 11. 
+.     * colonne per contenuto dell'intestazione, con le posizioni come riserva
+.     local vy ""
+ 12.     local vc ""
+ 13.     local vd ""
+ 14.     local vv ""
+ 15.     capture findvar, pattern("anno")
+ 16.     if !_rc local vy `r(varname)'
+ 17.     capture findvar, pattern("(^| )cap( |$)")
+ 18.     if !_rc local vc `r(varname)'
+ 19.     capture findvar, pattern("variabil")
+ 20.     if !_rc local vd `r(varname)'
+ 21.     capture findvar, pattern("import|valor")
+ 22.     if !_rc local vv `r(varname)'
+ 23.     if "`vy'" == "" | "`vc'" == "" | "`vd'" == "" | "`vv'" == "" {
+ 24.         di as txt "  intestazioni non riconosciute: uso le prime quattro colonne"
+ 25.         unab allv : _all
+ 26.         tokenize `allv'
+ 27.         local vy `1'
+ 28.         local vc `2'
+ 29.         local vd `3'
+ 30.         local vv `4'
+ 31.     }
+ 32.     keep `vy' `vc' `vd' `vv'
+ 33.     local i 0
+ 34.     foreach new in anno cap descr valore {
+ 35.         local ++i
+ 36.         local old : word `i' of `vy' `vc' `vd' `vv'
+ 37.         if "`old'" != "`new'" rename `old' `new'
+ 38.     }
+ 39.     tonum anno cap valore
+ 40.     quietly count if anno != `y'
+ 41.     if r(N) > 0 di as error "  Attenzione: " r(N) " righe con anno diverso da `y'"
+ 42. 
+.     * normalizzazione della voce: minuscole, spazi singoli, senza apostrofi
+.     gen d = ustrlower(stritrim(ustrtrim(descr)))
+ 43.     quietly replace d = subinstr(d, "'", "", .)
+ 44. 
+.     gen str12 code = ""
+ 45.     quietly {
+ 46.         replace code = "ncontrib"  if d == "numero contribuenti"
+ 47.         replace code = "imp_f"     if ustrregexm(d, "^reddito imponibile ?- ?frequenza$")
+ 48.         replace code = "imp_a"     if ustrregexm(d, "^reddito imponibile ?- ?ammontare")
+ 49.         replace code = "lav_f"     if ustrregexm(d, "^reddito da lavoro dipendente e assimilati ?- ?frequenza")
+ 50.         replace code = "lav_a"     if ustrregexm(d, "^reddito da lavoro dipendente e assimilati ?- ?ammontare")
+ 51.         replace code = "pen_f"     if ustrregexm(d, "^reddito da pensione ?- ?frequenza")
+ 52.         replace code = "pen_a"     if ustrregexm(d, "^reddito da pensione ?- ?ammontare")
+ 53.         replace code = "tot_f"     if ustrregexm(d, "^reddito complessivo ?- ?frequenza")
+ 54.         replace code = "tot_a"     if ustrregexm(d, "^reddito complessivo ?- ?ammontare")
+ 55.         replace code = "cle0_f"    if ustrregexm(d, "minore o uguale a zero euro ?- ?frequenza")
+ 56.         replace code = "cle0_a"    if ustrregexm(d, "minore o uguale a zero euro ?- ?ammontare")
+ 57.         replace code = "c00_10_f"  if ustrregexm(d, "da 0 a 10000 euro ?- ?frequenza")
+ 58.         replace code = "c00_10_a"  if ustrregexm(d, "da 0 a 10000 euro ?- ?ammontare")
+ 59.         replace code = "c10_15_f"  if ustrregexm(d, "da 10000 a 15000 euro ?- ?frequenza")
+ 60.         replace code = "c10_15_a"  if ustrregexm(d, "da 10000 a 15000 euro ?- ?ammontare")
+ 61.         replace code = "c15_26_f"  if ustrregexm(d, "da 15000 a 26000 euro ?- ?frequenza")
+ 62.         replace code = "c15_26_a"  if ustrregexm(d, "da 15000 a 26000 euro ?- ?ammontare")
+ 63.         replace code = "c26_55_f"  if ustrregexm(d, "da 26000 a 55000 euro ?- ?frequenza")
+ 64.         replace code = "c26_55_a"  if ustrregexm(d, "da 26000 a 55000 euro ?- ?ammontare")
+ 65.         replace code = "c55_75_f"  if ustrregexm(d, "da 55000 a 75000 euro ?- ?frequenza")
+ 66.         replace code = "c55_75_a"  if ustrregexm(d, "da 55000 a 75000 euro ?- ?ammontare")
+ 67.         replace code = "c75_120_f" if ustrregexm(d, "da 75000 a 120000 euro ?- ?frequenza")
+ 68.         replace code = "c75_120_a" if ustrregexm(d, "da 75000 a 120000 euro ?- ?ammontare")
+ 69.         replace code = "c120p_f"   if ustrregexm(d, "oltre 120000 euro ?- ?frequenza")
+ 70.         replace code = "c120p_a"   if ustrregexm(d, "oltre 120000 euro ?- ?ammontare")
+ 71.     }
+ 72. 
+.     foreach c in ncontrib imp_f imp_a lav_f lav_a c00_10_f c10_15_f c15_26_f {
+ 73.         quietly count if code == "`c'"
+ 74.         if r(N) != 38 di as error "  `y': voce `c' trovata per " r(N) " CAP (attesi 38)"
+ 75.     }
+ 76.     quietly count if missing(valore)
+ 77.     local nmiss = r(N)
+ 78.     quietly levelsof cap
+ 79.     di as txt "  `y': " _N " righe, " r(r) " CAP, " `nmiss' " importi mancanti (oscurati)"
+ 80. 
+.     keep anno cap descr d code valore
+ 81.     if `first' == 0 append using `acc'
+ 82.     quietly save `acc', replace
+ 83.     local first 0
+ 84. }
+(4 vars, 1,634 obs)
+  importato C:/Users/Salvatore/Downloads/milano_housing_stata/milano_housing/data/raw/redditi_e_principali_variabili_irpef_su_base_subcomunale_csv_2019.csv: 163
+> 4 righe, 4 colonne
+(1,634 missing values generated)
+  2019: 1634 righe, 38 CAP, 30 importi mancanti (oscurati)
+(4 vars, 1,634 obs)
+  importato C:/Users/Salvatore/Downloads/milano_housing_stata/milano_housing/data/raw/redditi_e_principali_variabili_irpef_su_base_subcomunale_csv_2020.csv: 163
+> 4 righe, 4 colonne
+(1,634 missing values generated)
+  2020: 1634 righe, 38 CAP, 12 importi mancanti (oscurati)
+(4 vars, 1,634 obs)
+  importato C:/Users/Salvatore/Downloads/milano_housing_stata/milano_housing/data/raw/redditi_e_principali_variabili_irpef_su_base_subcomunale_csv_2021.csv: 163
+> 4 righe, 4 colonne
+(1,634 missing values generated)
+  2021: 1634 righe, 38 CAP, 16 importi mancanti (oscurati)
+(4 vars, 1,634 obs)
+  importato C:/Users/Salvatore/Downloads/milano_housing_stata/milano_housing/data/raw/redditi_e_principali_variabili_irpef_su_base_subcomunale_csv_2022.csv: 163
+> 4 righe, 4 colonne
+(1,634 missing values generated)
+  2022: 1634 righe, 38 CAP, 24 importi mancanti (oscurati)
+(4 vars, 1,634 obs)
+  importato C:/Users/Salvatore/Downloads/milano_housing_stata/milano_housing/data/raw/redditi_e_principali_variabili_irpef_su_base_subcomunale_csv_2023.csv: 163
+> 4 righe, 4 colonne
+(1,634 missing values generated)
+  2023: 1634 righe, 38 CAP, 44 importi mancanti (oscurati)
+(4 vars, 1,710 obs)
+  importato C:/Users/Salvatore/Downloads/milano_housing_stata/milano_housing/data/raw/redditi_e_principali_variabili_irpef_su_base_subcomunale_csv_2024.csv: 171
+> 0 righe, 4 colonne
+(1,710 missing values generated)
+  2024: 1710 righe, 38 CAP, 72 importi mancanti (oscurati)
+
+. 
+. use `acc', clear
+
+. duplicates report anno cap d
+
+Duplicates in terms of anno cap d
+
+--------------------------------------
+   Copies | Observations       Surplus
+----------+---------------------------
+        1 |         9880             0
+--------------------------------------
+
+. capture isid anno cap d
+
+. if _rc di as error "  Attenzione: la chiave anno-CAP-voce non e' univoca"
+
+. gen int year = anno + $INC_SHIFT
+
+. label variable year "Anno di riferimento (anno d'imposta + INC_SHIFT)"
+
+. sort anno cap d
+
+. save "$WORK/irpef_long_all.dta", replace
+file C:/Users/Salvatore/Downloads/milano_housing_stata/milano_housing/data/work/irpef_long_all.dta saved
+
+. 
+. *------------------------------------------------------------------------------*
+. * CAP x anno
+. *------------------------------------------------------------------------------*
+. keep if code != ""
+(4,560 observations deleted)
+
+. keep anno cap code valore
+
+. isid anno cap code
+
+. reshape wide valore, i(anno cap) j(code) string
+(j = c00_10_a c00_10_f c10_15_a c10_15_f c120p_a c120p_f c15_26_a c15_26_f c26_55_a c26_55_f c55_75_a c55_75_f c75_120_a c75_120_f cle0_a cle0_f imp_a imp_f lav
+> _a lav_f ncontrib pen_a pen_f tot_a tot_f)
+
+Data                               Long   ->   Wide
+-----------------------------------------------------------------------------
+Number of observations            5,320   ->   228         
+Number of variables                   4   ->   27          
+j variable (25 values)             code   ->   (dropped)
+xij variables:
+                                 valore   ->   valorec00_10_a valorec00_10_f ... valoretot_f
+-----------------------------------------------------------------------------
+
+. rename valore* *
+
+. 
+. foreach c in ncontrib imp_f imp_a lav_f lav_a pen_f pen_a tot_f tot_a cle0_f c00_10_f ///
+>     c10_15_f c15_26_f c26_55_f c55_75_f c75_120_f c120p_f {
+  2.     capture confirm variable `c'
+  3.     if _rc gen double `c' = .
+  4. }
+
+. 
+. gen int year = anno + $INC_SHIFT
+
+. gen double ybar_imp = imp_a / imp_f if imp_f > 0 & !missing(imp_f)
+
+. gen double ybar_lav = lav_a / lav_f if lav_f > 0 & !missing(lav_f)
+
+. gen double ybar_tot = tot_a / tot_f if tot_f > 0 & !missing(tot_f)
+(190 missing values generated)
+
+. * le somme restano mancanti se una classe e' oscurata (nessuna somma "saltando" celle)
+. gen double nlow15   = c00_10_f + c10_15_f
+
+. gen double nlow26   = c00_10_f + c10_15_f + c15_26_f
+
+. gen double sh_low15 = nlow15 / ncontrib
+
+. gen double sh_low26 = nlow26 / ncontrib
+
+. egen byte nclass = rownonmiss(cle0_f c00_10_f c10_15_f c15_26_f c26_55_f c55_75_f c75_120_f c120p_f)
+
+. 
+. label variable anno     "Anno d'imposta"
+
+. label variable cap      "CAP"
+
+. label variable ncontrib "Numero contribuenti"
+
+. label variable ybar_imp "Reddito imponibile medio tra percettori con valore non nullo (EUR nominali)"
+
+. label variable ybar_lav "Reddito da lavoro dipendente e assimilati medio (EUR nominali)"
+
+. label variable ybar_tot "Reddito complessivo medio (solo anno d'imposta 2024)"
+
+. label variable nlow15   "Contribuenti con reddito complessivo >0 e <=15.000 EUR"
+
+. label variable nlow26   "Contribuenti con reddito complessivo >0 e <=26.000 EUR"
+
+. label variable sh_low15 "Quota su Numero contribuenti (denominatore include redditi nulli/negativi)"
+
+. label variable sh_low26 "Quota su Numero contribuenti (denominatore include redditi nulli/negativi)"
+
+. label variable nclass   "Classi di reddito complessivo osservate (su 8)"
+
+. 
+. * copertura delle classi (nel 2023 la classe oltre 120.000 e' oscurata in 11 CAP)
+. tab anno nclass
+
+           |  Classi di reddito complessivo
+      Anno |         osservate (su 8)
+ d'imposta |         6          7          8 |     Total
+-----------+---------------------------------+----------
+      2019 |         0         15         23 |        38 
+      2020 |         0          6         32 |        38 
+      2021 |         0          8         30 |        38 
+      2022 |         0         12         26 |        38 
+      2023 |        11          0         27 |        38 
+      2024 |        18          0         20 |        38 
+-----------+---------------------------------+----------
+     Total |        29         41        158 |       228 
+
+. bysort cap: egen byte full_classes = min(cond(inrange(anno, 2019, 2023), nclass == 8, 1))
+
+. egen byte tagcap = tag(cap)
+
+. quietly count if tagcap & full_classes
+
+. di as txt "  CAP con tutte le 8 classi osservate in ogni anno 2019-2023: " r(N) " (atteso 20)"
+  CAP con tutte le 8 classi osservate in ogni anno 2019-2023: 20 (atteso 20)
+
+. drop tagcap
+
+. 
+. * variazioni anomale del numero di contribuenti (es. CAP 20121 nel 2023)
+. sort cap anno
+
+. by cap: gen double g_contrib = ncontrib/ncontrib[_n-1] - 1 if anno == anno[_n-1] + 1
+(38 missing values generated)
+
+. di as txt "  Variazioni annue del numero di contribuenti oltre +/-20%:"
+  Variazioni annue del numero di contribuenti oltre +/-20%:
+
+. list cap anno ncontrib g_contrib if abs(g_contrib) > 0.20 & !missing(g_contrib), noobs
+
+  +-------------------------------------+
+  |   cap   anno   ncontrib   g_contrib |
+  |-------------------------------------|
+  | 20121   2023      22090   .32976162 |
+  +-------------------------------------+
+
+. label variable g_contrib "Variazione annua del numero di contribuenti"
+
+. 
+. order anno year cap ncontrib imp_f imp_a ybar_imp lav_f lav_a ybar_lav nlow15 sh_low15 ///
+>     nlow26 sh_low26 nclass full_classes
+
+. sort cap anno
+
+. save "$WORK/irpef_cap_year.dta", replace
+file C:/Users/Salvatore/Downloads/milano_housing_stata/milano_housing/data/work/irpef_cap_year.dta saved
+
+. 
+. *------------------------------------------------------------------------------*
+. * Totali cittadini e controlli sui valori riportati nel documento
+. *------------------------------------------------------------------------------*
+. collapse (sum) imp_a imp_f nlow15 nlow26 ncontrib ///
+>     (count) n_imp=imp_a n_low15=nlow15 n_low26=nlow26, by(anno year)
+
+. foreach v in n_imp n_low15 n_low26 {
+  2.     quietly count if `v' != 38
+  3.     if r(N) > 0 di as error "  Totali cittadini: `v' < 38 in " r(N) " anni (somme parziali)"
+  4. }
+
+. gen double ybar_city = imp_a / imp_f
+
+. gen double sh15_city = 100 * nlow15 / ncontrib
+
+. gen double sh26_city = 100 * nlow26 / ncontrib
+
+. label variable ybar_city "Media imponibile ponderata (somma ammontari / somma frequenze)"
+
+. label variable sh15_city "% contribuenti con reddito complessivo >0 e <=15.000"
+
+. label variable sh26_city "% contribuenti con reddito complessivo >0 e <=26.000"
+
+. list anno ncontrib ybar_city nlow15 sh15_city nlow26 sh26_city, noobs abbreviate(12)
+
+  +-----------------------------------------------------------------------+
+  | anno   ncontrib   ybar_city   nlow15   sh15_city   nlow26   sh26_city |
+  |-----------------------------------------------------------------------|
+  | 2019    1018249   34226.601   337797   33.174302   577692   56.733864 |
+  | 2020     986799   34415.623   328784   33.318234   553766   56.117406 |
+  | 2021    1006056   35930.968   329078    32.70971   556489   55.313919 |
+  | 2022    1031511    37640.75   321702   31.187452   551790    53.49337 |
+  | 2023    1044373   39070.866   307291   29.423491   526650   50.427386 |
+  |-----------------------------------------------------------------------|
+  | 2024    1047592   40357.618   293970   28.061497   503844   48.095442 |
+  +-----------------------------------------------------------------------+
+
+. 
+. foreach pr in "2019 34226.60" "2023 39070.87" {
+  2.     tokenize `pr'
+  3.     quietly summarize ybar_city if anno == `1', meanonly
+  4.     checkval, label("Media imponibile ponderata `1'") value(`r(mean)') expected(`2') tol(1)
+  5. }
+  [OK] Media imponibile ponderata 2019:     34226.6006  (atteso     34226.6000)
+  [OK] Media imponibile ponderata 2023:     39070.8663  (atteso     39070.8700)
+
+. foreach pr in "2019 33.17" "2023 29.42" "2024 28.06" {
+  2.     tokenize `pr'
+  3.     quietly summarize sh15_city if anno == `1', meanonly
+  4.     checkval, label("Quota contribuenti 0-15.000 EUR, `1' (%)") value(`r(mean)') expected(`2') tol(0.01)
+  5. }
+  [OK] Quota contribuenti 0-15.000 EUR, 2019 (%):        33.1743  (atteso        33.1700)
+  [OK] Quota contribuenti 0-15.000 EUR, 2023 (%):        29.4235  (atteso        29.4200)
+  [OK] Quota contribuenti 0-15.000 EUR, 2024 (%):        28.0615  (atteso        28.0600)
+
+. save "$WORK/irpef_city_year.dta", replace
+file C:/Users/Salvatore/Downloads/milano_housing_stata/milano_housing/data/work/irpef_city_year.dta saved
+
+. export delimited using "$TAB/irpef_city_year.csv", replace
+file C:/Users/Salvatore/Downloads/milano_housing_stata/milano_housing/output/tables/irpef_city_year.csv saved
+
+. 
+end of do-file
+
+. do "$CODE/02_import_omi.do"
+
+. *==============================================================================*
+. * 02_import_omi.do
+. * Quotazioni OMI DS1996, 2004-2025 (44 semestri). Unita': zona x semestre x
+. * tipologia x stato. Locazioni in EUR/m2 al mese, compravendite in EUR/m2,
+. * superficie lorda (flag L). Selezione principale: Cod_Tip 20 (Abitazioni
+. * civili), stato NORMALE. Punto medio dell'intervallo come scenario centrale.
+. *
+. * Output: $WORK/omi_all.dta           tutte le righe di Milano, pulite
+. *         $WORK/omi_civ_sem.dta       abitazioni civili NORMALE, zona x semestre
+. *         $WORK/omi_zone_year.dta     media dei due semestri, zona x anno
+. *         $WORK/omi_zone_s1.dta       solo primi semestri (serie coerente 2019-2024)
+. *         $WORK/omi_zone_dict.dta     zona, LinkZona, fascia (+ descrizione)
+. *==============================================================================*
+. version 16
+
+. di as txt _n "{hline 78}" _n "02 - IMPORT QUOTAZIONI OMI" _n "{hline 78}"
+
+------------------------------------------------------------------------------
+02 - IMPORT QUOTAZIONI OMI
+------------------------------------------------------------------------------
+
+. 
+. imp_csv using "$RAW/$F_OMI"
+(23 vars, 27,284 obs)
+  importato C:/Users/Salvatore/Downloads/milano_housing_stata/milano_housing/data/raw/ds1996_quotazioni_omi_compravendita_e_locazione_riepilogo.csv: 27284 righe
+> , 23 colonne
+
+. capture confirm variable anno
+
+. if _rc getvar anno, pattern("anno( |$)")     // es. intestazione con BOM
+
+. foreach v in anno periodo zona linkzona cod_tip descr_tipologia stato compr_min compr_max ///
+>     sup_nl_compr loc_min loc_max sup_nl_loc {
+  2.     capture confirm variable `v'
+  3.     if _rc {
+  4.         di as error "Colonna OMI attesa non trovata: `v'"
+  5.         describe, simple
+  6.         exit 111
+  7.     }
+  8. }
+
+. tonum anno cod_tip compr_min compr_max loc_min loc_max
+
+. 
+. capture confirm variable comune_descrizione
+
+. if !_rc {
+.     quietly count if upper(ustrtrim(comune_descrizione)) != "MILANO"
+.     if r(N) > 0 {
+.         di as txt "  elimino " r(N) " righe di altri comuni"
+.         keep if upper(ustrtrim(comune_descrizione)) == "MILANO"
+.     }
+. }
+
+. foreach v in zona linkzona stato descr_tipologia sup_nl_compr sup_nl_loc fascia {
+  2.     capture confirm string variable `v'
+  3.     if !_rc quietly replace `v' = upper(ustrtrim(`v'))
+  4. }
+
+. gen byte sem = real(substr(ustrtrim(periodo), 1, 1))
+
+. assert inlist(sem, 1, 2)
+
+. gen double t = anno + (sem - 1)/2
+
+. 
+. egen byte tag_t = tag(anno sem)
+
+. quietly count if tag_t
+
+. di as txt "  righe: " _N " (attese 27.284); semestri: " r(N) " (attesi 44)"
+  righe: 27284 (attese 27.284); semestri: 44 (attesi 44)
+
+. drop tag_t
+
+. duplicates report anno sem zona cod_tip stato
+
+Duplicates in terms of anno sem zona cod_tip stato
+
+--------------------------------------
+   Copies | Observations       Surplus
+----------+---------------------------
+        1 |        27284             0
+--------------------------------------
+
+. 
+. gen double R_mid = (loc_min + loc_max)/2
+
+. gen double P_mid = (compr_min + compr_max)/2
+
+. rename (loc_min loc_max compr_min compr_max) (R_min R_max P_min P_max)
+
+. label variable R_mid "Locazione: punto medio OMI (EUR/m2 lordo/mese)"
+
+. label variable R_min "Locazione: minimo OMI (EUR/m2 lordo/mese)"
+
+. label variable R_max "Locazione: massimo OMI (EUR/m2 lordo/mese)"
+
+. label variable P_mid "Compravendita: punto medio OMI (EUR/m2 lordo)"
+
+. label variable P_min "Compravendita: minimo OMI (EUR/m2 lordo)"
+
+. label variable P_max "Compravendita: massimo OMI (EUR/m2 lordo)"
+
+. label variable sem   "Semestre"
+
+. save "$WORK/omi_all.dta", replace
+file C:/Users/Salvatore/Downloads/milano_housing_stata/milano_housing/data/work/omi_all.dta saved
+
+. 
+. di as txt "  Flag di superficie per le abitazioni civili (attesi tutti L = lorda):"
+  Flag di superficie per le abitazioni civili (attesi tutti L = lorda):
+
+. tab sup_nl_loc sup_nl_compr if cod_tip == 20, missing
+
+           | Sup_NL_com
+           |     pr
+Sup_NL_loc |         L |     Total
+-----------+-----------+----------
+         L |     5,196 |     5,196 
+-----------+-----------+----------
+     Total |     5,196 |     5,196 
+
+. 
+. * zone con abitazioni civili quotate solo in stati diversi da NORMALE (es. C13)
+. preserve
+
+. keep if cod_tip == 20 & inrange(anno, $Y0, $Y1)
+(26,494 observations deleted)
+
+. gen byte isnorm = (stato == "NORMALE")
+
+. collapse (max) isnorm, by(zona)
+
+. di as txt "  Zone con abitazioni civili ma senza stato NORMALE in $Y0-$Y1 (non sostituite):"
+  Zone con abitazioni civili ma senza stato NORMALE in 2019-2023 (non sostituite):
+
+. list zona if isnorm == 0, noobs
+
+  +------+
+  | zona |
+  |------|
+  |  C13 |
+  +------+
+
+. restore
+
+. 
+. *------------------------------------------------------------------------------*
+. * Selezione principale
+. *------------------------------------------------------------------------------*
+. keep if cod_tip == 20 & stato == "NORMALE"
+(25,254 observations deleted)
+
+. capture isid zona anno sem
+
+. if _rc {
+.     di as error "Piu' righe per zona-semestre dopo la selezione: verificare"
+.     duplicates list zona anno sem
+.     exit 459
+. }
+
+. 
+. preserve
+
+. keep if inrange(anno, $Y0, $Y1)
+(1,640 observations deleted)
+
+. egen byte tz = tag(zona)
+
+. quietly count if tz
+
+. di as txt "  Abitazioni civili NORMALE $Y0-$Y1: " r(N) " zone (attese 39), " _N " righe (attese 390)"
+  Abitazioni civili NORMALE 2019-2023: 39 zone (attese 39), 390 righe (attese 390)
+
+. bysort zona: gen nsem = _N
+
+. di as txt "  Zone senza tutti i semestri del periodo:"
+  Zone senza tutti i semestri del periodo:
+
+. list zona nsem if tz & nsem < 2*($Y1 - $Y0 + 1), noobs
+
+. bysort zona (linkzona): gen byte lzchg = linkzona[1] != linkzona[_N]
+
+. quietly count if lzchg
+
+. if r(N) > 0 di as error "  LinkZona cambia nel periodo per alcune zone: controllare le geometrie"
+
+. quietly count if missing(R_mid)
+
+. di as txt "  semestri con locazione mancante: " r(N)
+  semestri con locazione mancante: 0
+
+. quietly count if missing(P_mid)
+
+. di as txt "  semestri con compravendita mancante: " r(N)
+  semestri con compravendita mancante: 0
+
+. restore
+
+. 
+. * cambi di codice nel 2024 (D15 e D30 scompaiono, D37-D40 compaiono)
+. preserve
+
+. keep if anno == 2024
+(1,951 observations deleted)
+
+. gen byte s1 = (sem == 1)
+
+. gen byte s2 = (sem == 2)
+
+. collapse (max) s1 s2, by(zona)
+
+. di as txt "  Zone presenti nel 1 sem. 2024 ma non nel 2 sem.:"
+  Zone presenti nel 1 sem. 2024 ma non nel 2 sem.:
+
+. list zona if s1 == 1 & s2 == 0, noobs
+
+  +------+
+  | zona |
+  |------|
+  |  D15 |
+  |  D30 |
+  +------+
+
+. di as txt "  Zone nuove nel 2 sem. 2024:"
+  Zone nuove nel 2 sem. 2024:
+
+. list zona if s1 == 0 & s2 == 1, noobs
+
+  +------+
+  | zona |
+  |------|
+  |  D37 |
+  |  D38 |
+  |  D40 |
+  +------+
+
+. restore
+
+. 
+. capture confirm variable fascia
+
+. if _rc gen fascia = ""
+
+. keep anno sem t zona linkzona fascia R_mid R_min R_max P_mid P_min P_max sup_nl_loc sup_nl_compr
+
+. sort zona anno sem
+
+. save "$WORK/omi_civ_sem.dta", replace
+file C:/Users/Salvatore/Downloads/milano_housing_stata/milano_housing/data/work/omi_civ_sem.dta saved
+
+. 
+. * dizionario delle zone (ultima osservazione nel periodo principale)
+. preserve
+
+. keep if inrange(anno, $Y0, $Y1)
+(1,640 observations deleted)
+
+. bysort zona (anno sem): keep if _n == _N
+(351 observations deleted)
+
+. keep zona linkzona fascia
+
+. save "$WORK/omi_zone_dict.dta", replace
+file C:/Users/Salvatore/Downloads/milano_housing_stata/milano_housing/data/work/omi_zone_dict.dta saved
+
+. restore
+
+. 
+. * serie dei soli primi semestri (estensione coerente al 2024)
+. preserve
+
+. keep if sem == 1
+(1,016 observations deleted)
+
+. keep zona anno R_mid R_min R_max P_mid P_min P_max
+
+. isid zona anno
+
+. save "$WORK/omi_zone_s1.dta", replace
+file C:/Users/Salvatore/Downloads/milano_housing_stata/milano_housing/data/work/omi_zone_s1.dta saved
+
+. restore
+
+. 
+. * indicatore annuale: media dei due semestri (missing se manca un semestre)
+. collapse (mean) R_mid R_min R_max P_mid P_min P_max (count) nR=R_mid nP=P_mid, by(zona anno)
+
+. foreach v in R_mid R_min R_max {
+  2.     quietly replace `v' = . if nR < 2
+  3. }
+
+. foreach v in P_mid P_min P_max {
+  2.     quietly replace `v' = . if nP < 2
+  3. }
+
+. label variable R_mid "Locazione, punto medio, media dei due semestri (EUR/m2 lordo/mese)"
+
+. label variable P_mid "Compravendita, punto medio, media dei due semestri (EUR/m2 lordo)"
+
+. label variable nR    "Semestri con locazione osservata"
+
+. label variable nP    "Semestri con compravendita osservata"
+
+. isid zona anno
+
+. save "$WORK/omi_zone_year.dta", replace
+file C:/Users/Salvatore/Downloads/milano_housing_stata/milano_housing/data/work/omi_zone_year.dta saved
+
+. 
+. *------------------------------------------------------------------------------*
+. * Descrizioni delle zone (facoltativo; il CSV non contiene geometrie)
+. *------------------------------------------------------------------------------*
+. capture confirm file "$RAW/$F_OMIZONE"
+
+. if !_rc {
+.     preserve
+.     capture noisily {
+.         imp_csv using "$RAW/$F_OMIZONE"
+(16 vars, 41 obs)
+  importato C:/Users/Salvatore/Downloads/milano_housing_stata/milano_housing/data/raw/zone_omi_2021_2.csv: 41 righe, 16 colonne
+.         getvar zona, pattern("(^| )zona( |$)")
+  zona <- zona
+.         getvar zona_descr, pattern("^zona_?descr") optional
+  zona_descr <- zona_descr
+.         capture confirm variable zona_descr
+.         if _rc gen zona_descr = ""
+.         keep zona zona_descr
+.         replace zona = upper(ustrtrim(zona))
+(0 real changes made)
+.         duplicates drop zona, force
+
+Duplicates in terms of zona
+
+(0 observations are duplicates)
+.         tempfile zd
+.         save `zd'
+file C:\Users\SALVAT~1\AppData\Local\Temp\ST_2c90_000007.tmp saved as .dta format
+.         use "$WORK/omi_zone_dict.dta", clear
+.         merge 1:1 zona using `zd', keep(master match) nogen
+
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                             0
+    Matched                                39  
+    -----------------------------------------
+.         save "$WORK/omi_zone_dict.dta", replace
+file C:/Users/Salvatore/Downloads/milano_housing_stata/milano_housing/data/work/omi_zone_dict.dta saved
+.     }
+.     if _rc di as txt "  (descrizioni delle zone non aggiunte: struttura del CSV diversa dal previsto)"
+.     restore
+. }
+
+. 
+end of do-file
+
+. do "$CODE/03_import_ds205.do"
+
+. *==============================================================================*
+. * 03_import_ds205.do
+. * DS205 - caratteristiche demografiche dei quartieri, 2011-2024
+. * 1.232 righe NIL-anno + 11 righe N.D. (tenute a parte per le riconciliazioni)
+. * Emigrati = cancellazioni verso altri comuni italiani o l'estero.
+. *
+. * Output: $WORK/ds205_nil_year.dta   NIL x anno, tassi e quote
+. *         $WORK/ds205_nd_rows.dta    righe N.D.
+. *         $WORK/ds205_city_year.dta  totali cittadini (N.D. inclusi)
+. *==============================================================================*
+. version 16
+
+. di as txt _n "{hline 78}" _n "03 - IMPORT DS205 QUARTIERI" _n "{hline 78}"
+
+------------------------------------------------------------------------------
+03 - IMPORT DS205 QUARTIERI
+------------------------------------------------------------------------------
+
+. 
+. imp_csv using "$RAW/$F_DS205"
+(29 vars, 1,243 obs)
+  importato C:/Users/Salvatore/Downloads/milano_housing_stata/milano_housing/data/raw/ds205_dati_quartieri_2011_2024_.csv: 1243 righe, 29 colonne
+
+. 
+. getvar year,    pattern("anno( |$)")
+  year <- anno
+
+. getvar name,    pattern("quartiere")
+  name <- quartiere
+
+. getvar nil,     pattern("(^| )nil( |$)")
+  nil <- nil
+
+. getvar males,   pattern("(^| )uomini( |$)") optional
+  males <- uomini
+
+. getvar females, pattern("(^| )donne( |$)") optional
+  females <- donne
+
+. getvar pop,     pattern("(^| )totale( |$)")
+  pop <- totale
+
+. getvar minors,  pattern("(^| )minori( |$)")
+  minors <- minori
+
+. getvar foreign, pattern("(^| )stranieri( |$)")
+  foreign <- stranieri
+
+. getvar fam,     pattern("famiglie ?registrate ?in ?anagrafe") exclude("unipersonali|soli")
+  fam <- famiglieregistrateinanagrafe
+
+. getvar fam1,    pattern("unipersonali")
+  fam1 <- famiglieunipersonaliregistratein
+
+. getvar births,  pattern("nati ?vivi") optional
+  births <- nativivi
+
+. getvar deaths,  pattern("(^| )morti( |$)") optional
+  deaths <- morti
+
+. getvar emig,    pattern("(^| )emigrati( |$)")
+  emig <- emigrati
+
+. getvar immig,   pattern("(^| )immigrati( |$)")
+  immig <- immigrati
+
+. getvar pop65,   pattern("65 ?e ?\+|(^|[^0-9])65e")
+  pop65 <- v19
+
+. getvar pop80,   pattern("80 ?e ?\+|(^|[^0-9])80e") exclude("soli|fam")
+  pop80 <- e
+
+. getvar area,    pattern("(^| )area") optional
+  area <- areametriquadrati
+
+. 
+. local keepv
+
+. foreach v in year name nil males females pop minors foreign fam fam1 births deaths emig immig pop65 pop80 area {
+  2.     capture confirm variable `v'
+  3.     if !_rc local keepv `keepv' `v'
+  4. }
+
+. keep `keepv'
+
+. local nm name
+
+. local numv : list keepv - nm
+
+. tonum `numv'
+
+. replace name = ustrtrim(name)
+(0 real changes made)
+
+. 
+. * righe N.D.
+. gen byte nd = missing(nil) | upper(name) == "N.D."
+
+. preserve
+
+. collapse (sum) emig immig pop, by(year)
+
+. rename (emig immig pop) (emig_ds205 immig_ds205 pop_ds205)
+
+. label variable emig_ds205 "Emigrati, somma DS205 (N.D. inclusi)"
+
+. save "$WORK/ds205_city_year.dta", replace
+file C:/Users/Salvatore/Downloads/milano_housing_stata/milano_housing/data/work/ds205_city_year.dta saved
+
+. restore
+
+. preserve
+
+. keep if nd
+(1,232 observations deleted)
+
+. save "$WORK/ds205_nd_rows.dta", replace
+file C:/Users/Salvatore/Downloads/milano_housing_stata/milano_housing/data/work/ds205_nd_rows.dta saved
+
+. restore
+
+. drop if nd
+(11 observations deleted)
+
+. drop nd
+
+. 
+. isid nil year
+
+. quietly count
+
+. di as txt "  righe NIL-anno: " r(N) " (attese 1.232)"
+  righe NIL-anno: 1232 (attese 1.232)
+
+. tab year
+
+       Anno |      Freq.     Percent        Cum.
+------------+-----------------------------------
+       2011 |         88        7.14        7.14
+       2012 |         88        7.14       14.29
+       2013 |         88        7.14       21.43
+       2014 |         88        7.14       28.57
+       2015 |         88        7.14       35.71
+       2016 |         88        7.14       42.86
+       2017 |         88        7.14       50.00
+       2018 |         88        7.14       57.14
+       2019 |         88        7.14       64.29
+       2020 |         88        7.14       71.43
+       2021 |         88        7.14       78.57
+       2022 |         88        7.14       85.71
+       2023 |         88        7.14       92.86
+       2024 |         88        7.14      100.00
+------------+-----------------------------------
+      Total |      1,232      100.00
+
+. 
+. *------------------------------------------------------------------------------*
+. * Tassi e quote
+. *------------------------------------------------------------------------------*
+. xtset nil year
+
+Panel variable: nil (strongly balanced)
+ Time variable: year, 2011 to 2024
+         Delta: 1 unit
+
+. gen double pop_lag    = L.pop
+(88 missing values generated)
+
+. gen double pop_avg    = (L.pop + pop)/2
+(88 missing values generated)
+
+. gen double r_emig     = 1000*emig/pop_lag  if pop_lag > 0 & !missing(pop_lag)
+(92 missing values generated)
+
+. gen double r_emig_avg = 1000*emig/pop_avg  if pop_avg > 0 & !missing(pop_avg)
+(92 missing values generated)
+
+. gen double r_immig    = 1000*immig/pop_lag if pop_lag > 0 & !missing(pop_lag)
+(92 missing values generated)
+
+. gen double sh_minors  = minors/pop  if pop > 0 & !missing(pop)
+(5 missing values generated)
+
+. gen double sh_a65     = pop65/pop   if pop > 0 & !missing(pop)
+(6 missing values generated)
+
+. gen double sh_a80     = pop80/pop   if pop > 0 & !missing(pop)
+(5 missing values generated)
+
+. gen double sh_foreign = foreign/pop if pop > 0 & !missing(pop)
+(5 missing values generated)
+
+. gen double sh_fam1    = fam1/fam    if fam > 0 & !missing(fam)
+(5 missing values generated)
+
+. 
+. label variable pop        "Residenti (Totale)"
+
+. label variable emig       "Emigrati (uscite verso altri comuni o estero)"
+
+. label variable pop_lag    "Residenti anno precedente"
+
+. label variable r_emig     "Uscite per 1.000 residenti dell'anno precedente"
+
+. label variable r_emig_avg "Uscite per 1.000 residenti medi (t-1, t)"
+
+. label variable r_immig    "Ingressi per 1.000 residenti dell'anno precedente"
+
+. label variable sh_minors  "Quota minori"
+
+. label variable sh_a65     "Quota 65 anni e oltre"
+
+. label variable sh_a80     "Quota 80 anni e oltre"
+
+. label variable sh_foreign "Quota residenti con cittadinanza straniera"
+
+. label variable sh_fam1    "Quota famiglie anagrafiche unipersonali"
+
+. 
+. * esempio del documento: Adriano, 625 emigrati 2024 / 18.150 residenti 2023
+. quietly summarize r_emig if year == 2024 & ustrregexm(ustrlower(name), "adriano"), meanonly
+
+. checkval, label("Uscite per 1.000, Adriano 2024") value(`r(mean)') expected(34.44) tol(0.01)
+  [OK] Uscite per 1.000, Adriano 2024:        34.4353  (atteso        34.4400)
+
+. 
+. di as txt "  NIL con popolazione nulla (tassi indefiniti):"
+  NIL con popolazione nulla (tassi indefiniti):
+
+. list nil name year pop if pop == 0, noobs sepby(nil)
+
+  +-----------------------------------+
+  | nil             name   year   pop |
+  |-----------------------------------|
+  |   8   Parco Sempione   2020     0 |
+  |   8   Parco Sempione   2021     0 |
+  |   8   Parco Sempione   2022     0 |
+  |   8   Parco Sempione   2023     0 |
+  |   8   Parco Sempione   2024     0 |
+  +-----------------------------------+
+
+. quietly count if year == 2019 & pop < $SMALL_NIL
+
+. di as txt "  NIL con meno di $SMALL_NIL residenti nel 2019: " r(N) " (attesi 8)"
+  NIL con meno di 500 residenti nel 2019: 8 (attesi 8)
+
+. list nil name pop if year == 2019 & pop < $SMALL_NIL, noobs
+
+  +-----------------------------------+
+  | nil                    name   pop |
+  |-----------------------------------|
+  |   3   Giardini P.ta Venezia    45 |
+  |   8          Parco Sempione     2 |
+  |  74                 Roserio   261 |
+  |  75              Stephenson   114 |
+  |  84              Parco Nord   101 |
+  |-----------------------------------|
+  |  85     Parco delle Abbazie   465 |
+  |  86       Parco dei Navigli   330 |
+  |  87                 Assiano   295 |
+  +-----------------------------------+
+
+. 
+. capture confirm variable area
+
+. if !_rc {
+.     bysort nil (year): gen double area_chg = area/area[_n-1] - 1 if _n > 1
+(88 missing values generated)
+.     di as txt "  Cambi del campo area oltre l'1% (non usare per densita' senza verifica, es. NIL 5, 16, 71):"
+  Cambi del campo area oltre l'1% (non usare per densita' senza verifica, es. NIL 5, 16, 71):
+.     list nil name year area area_chg if abs(area_chg) > 0.01 & !missing(area_chg), noobs
+
+  +---------------------------------------------------------------------------+
+  | nil                                  name   year        area     area_chg |
+  |---------------------------------------------------------------------------|
+  |   5      Porta Vigentina - Porta Lodovica   2019   3427070.6    2.0188089 |
+  |  16                      Gorla - Precotto   2019   1135239.3    -.6222949 |
+  |  71   Villapizzone - Cagnola - Boldinasco   2019   3005623.5   -.12297591 |
+  +---------------------------------------------------------------------------+
+.     drop area_chg
+. }
+
+. 
+. sort nil year
+
+. save "$WORK/ds205_nil_year.dta", replace
+file C:/Users/Salvatore/Downloads/milano_housing_stata/milano_housing/data/work/ds205_nil_year.dta saved
+
+. 
+end of do-file
+
+. do "$CODE/04_import_ds1960.do"
+
+. *==============================================================================*
+. * 04_import_ds1960.do
+. * DS1960 - cancellazioni anagrafiche per luogo di destinazione, 2020-2024
+. * Livello cittadino: NON fornisce la matrice NIL di origine x destinazione,
+. * quindi le quote non vanno attribuite ai singoli NIL.
+. *
+. * Output: $WORK/ds1960_dest_year.dta
+. *         $TAB/ds1960_destinations_grouped.csv
+. *==============================================================================*
+. version 16
+
+. di as txt _n "{hline 78}" _n "04 - IMPORT DS1960 DESTINAZIONI" _n "{hline 78}"
+
+------------------------------------------------------------------------------
+04 - IMPORT DS1960 DESTINAZIONI
+------------------------------------------------------------------------------
+
+. 
+. imp_csv using "$RAW/$F_DS1960"
+(3 vars, 115 obs)
+  importato C:/Users/Salvatore/Downloads/milano_housing_stata/milano_housing/data/raw/ds1960_popolazione_cancellazioni_evento_dest.csv: 115 righe, 3 colonne
+
+. getvar year, pattern("anno")
+  year <- anno_evento
+
+. getvar dest, pattern("luogo|dest")
+  dest <- luogo_dest
+
+. getvar flow, pattern("numer")
+  flow <- numerosità
+
+. keep year dest flow
+
+. tonum year flow
+
+. replace dest = ustrtrim(dest)
+(0 real changes made)
+
+. 
+. gen byte dest_nd = inlist(ustrlower(dest), "n.d.", "n.d", "nd")
+
+. gen str24 dest_grp = ""
+(115 missing values generated)
+
+. replace dest_grp = "Provincia di Milano"   if ustrlower(dest) == "prov. mi"
+(5 real changes made)
+
+. replace dest_grp = "Altre prov. Lombardia" if ustrregexm(ustrlower(dest), "altre prov")
+(5 real changes made)
+
+. replace dest_grp = "Estero"                if ustrlower(dest) == "estero"
+(5 real changes made)
+
+. replace dest_grp = "N.D."                  if dest_nd == 1
+(5 real changes made)
+
+. replace dest_grp = "Altre regioni"         if dest_grp == ""
+(95 real changes made)
+
+. bysort year: egen double tot_year = total(flow)
+
+. gen double share = 100*flow/tot_year
+
+. label variable flow  "Cancellazioni (numerosita')"
+
+. label variable share "% delle cancellazioni dell'anno"
+
+. save "$WORK/ds1960_dest_year.dta", replace
+file C:/Users/Salvatore/Downloads/milano_housing_stata/milano_housing/data/work/ds1960_dest_year.dta saved
+
+. 
+. preserve
+
+. collapse (sum) flow, by(year dest_grp)
+
+. bysort year: egen double tot_year = total(flow)
+
+. gen double share = 100*flow/tot_year
+
+. list year dest_grp flow share, sepby(year) noobs
+
+  +--------------------------------------------------+
+  | year                dest_grp    flow       share |
+  |--------------------------------------------------|
+  | 2020   Altre prov. Lombardia    7745   18.820013 |
+  | 2020           Altre regioni   10028   24.367604 |
+  | 2020                  Estero    4646   11.289578 |
+  | 2020                    N.D.    6422   15.605181 |
+  | 2020     Provincia di Milano   12312   29.917624 |
+  |--------------------------------------------------|
+  | 2021   Altre prov. Lombardia    8866   20.234617 |
+  | 2021           Altre regioni   11521   26.294048 |
+  | 2021                  Estero    4920   11.228775 |
+  | 2021                    N.D.    3980   9.0834398 |
+  | 2021     Provincia di Milano   14529    33.15912 |
+  |--------------------------------------------------|
+  | 2022   Altre prov. Lombardia    9640   22.573469 |
+  | 2022           Altre regioni   11282   26.418452 |
+  | 2022                  Estero    4969    11.63564 |
+  | 2022                    N.D.    1842   4.3133123 |
+  | 2022     Provincia di Milano   14972   35.059127 |
+  |--------------------------------------------------|
+  | 2023   Altre prov. Lombardia    9681    21.71212 |
+  | 2023           Altre regioni   11611   26.040639 |
+  | 2023                  Estero    5386   12.079483 |
+  | 2023                    N.D.    2553   5.7257558 |
+  | 2023     Provincia di Milano   15357   34.442002 |
+  |--------------------------------------------------|
+  | 2024   Altre prov. Lombardia   10112   22.739948 |
+  | 2024           Altre regioni   11907   26.776558 |
+  | 2024                  Estero    2990   6.7239363 |
+  | 2024                    N.D.    3167   7.1219754 |
+  | 2024     Provincia di Milano   16292   36.637582 |
+  +--------------------------------------------------+
+
+. export delimited using "$TAB/ds1960_destinations_grouped.csv", replace
+file C:/Users/Salvatore/Downloads/milano_housing_stata/milano_housing/output/tables/ds1960_destinations_grouped.csv saved
+
+. quietly summarize share if year == 2020 & dest_grp == "N.D.", meanonly
+
+. checkval, label("Quota destinazione N.D. 2020 (%)") value(`r(mean)') expected(15.61) tol(0.01)
+  [OK] Quota destinazione N.D. 2020 (%):        15.6052  (atteso        15.6100)
+
+. quietly summarize share if year == 2024 & dest_grp == "N.D.", meanonly
+
+. checkval, label("Quota destinazione N.D. 2024 (%)") value(`r(mean)') expected(7.12) tol(0.01)
+  [OK] Quota destinazione N.D. 2024 (%):         7.1220  (atteso         7.1200)
+
+. restore
+
+. 
+. * riconciliazione con gli Emigrati del DS205
+. preserve
+
+. collapse (sum) flow, by(year)
+
+. rename flow emig_ds1960
+
+. merge 1:1 year using "$WORK/ds205_city_year.dta", keep(master match) nogen keepusing(emig_ds205)
+
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                             0
+    Matched                                 5  
+    -----------------------------------------
+
+. gen double diff = emig_ds1960 - emig_ds205
+
+. list year emig_ds1960 emig_ds205 diff, noobs
+
+  +-----------------------------------+
+  | year   emi~1960   emig~205   diff |
+  |-----------------------------------|
+  | 2020      41153      41153      0 |
+  | 2021      43816      43816      0 |
+  | 2022      42705      42705      0 |
+  | 2023      44588      44588      0 |
+  | 2024      44468      44468      0 |
+  +-----------------------------------+
+
+. foreach pr in "2020 41153" "2021 43816" "2022 42705" "2023 44588" "2024 44468" {
+  2.     tokenize `pr'
+  3.     quietly summarize emig_ds1960 if year == `1', meanonly
+  4.     checkval, label("Cancellazioni DS1960 `1'") value(`r(mean)') expected(`2') tol(0.5)
+  5.     quietly summarize emig_ds205 if year == `1', meanonly
+  6.     checkval, label("Emigrati DS205 `1'") value(`r(mean)') expected(`2') tol(0.5)
+  7. }
+  [OK] Cancellazioni DS1960 2020:     41153.0000  (atteso     41153.0000)
+  [OK] Emigrati DS205 2020:     41153.0000  (atteso     41153.0000)
+  [OK] Cancellazioni DS1960 2021:     43816.0000  (atteso     43816.0000)
+  [OK] Emigrati DS205 2021:     43816.0000  (atteso     43816.0000)
+  [OK] Cancellazioni DS1960 2022:     42705.0000  (atteso     42705.0000)
+  [OK] Emigrati DS205 2022:     42705.0000  (atteso     42705.0000)
+  [OK] Cancellazioni DS1960 2023:     44588.0000  (atteso     44588.0000)
+  [OK] Emigrati DS205 2023:     44588.0000  (atteso     44588.0000)
+  [OK] Cancellazioni DS1960 2024:     44468.0000  (atteso     44468.0000)
+  [OK] Emigrati DS205 2024:     44468.0000  (atteso     44468.0000)
+
+. restore
+
+. 
+end of do-file
+
+. do "$CODE/05_import_index.do"
+
+. *==============================================================================*
+. * 05_import_index.do
+. * File dell'indice del paper (Biferale et al., Cities 2026): 88 NIL, misure
+. * 2011 e 2021, indici e geometrie WKT. 88 righe, 29 colonne.
+. *
+. * Al primo run stampa le colonne (nome Stata | intestazione | esempio) e si
+. * ferma se in 00_master.do mancano i nomi IX_*. Il resto della pipeline gira.
+. *
+. * Output: $TAB/index_codebook.csv
+. *         $WORK/index_nil.dta          una riga per NIL, nomi canonici, flag
+. *         $WORK/nil_geometry_wkt.csv   codice NIL + WKT (per mappe fuori Stata)
+. *==============================================================================*
+. version 16
+
+. di as txt _n "{hline 78}" _n "05 - IMPORT FILE DELL'INDICE" _n "{hline 78}"
+
+------------------------------------------------------------------------------
+05 - IMPORT FILE DELL'INDICE
+------------------------------------------------------------------------------
+
+. 
+. global IX_OK 0
+
+. capture confirm file "$RAW/$F_INDEX"
+
+. if _rc {
+.     di as error "  $RAW/$F_INDEX non trovato: moduli 07 e 09 saltati"
+.     exit
+. }
+
+. imp_csv using "$RAW/$F_INDEX"
+(1 var, 88 obs)
+(29 vars, 88 obs)
+  importato C:/Users/Salvatore/Downloads/milano_housing_stata/milano_housing/data/raw/finaldataset_export_good.csv: 88 righe, 29 colonne
+
+. di as txt "  colonne: " c(k) " (attese 29); righe: " _N " (attese 88)"
+  colonne: 29 (attese 29); righe: 88 (attese 88)
+
+. 
+. * codebook per compilare la configurazione
+. di as txt _n "  {ul:Nome Stata}                       {ul:Intestazione originale}           {ul:Valore riga 1}"
+
+  Nome Stata                       Intestazione originale           Valore riga 1
+
+. foreach v of varlist _all {
+  2.     local lab : variable label `v'
+  3.     local val = substr(`v'[1], 1, 40)
+  4.     di as txt "  " %-32s "`v'" " " %-32s `"`lab'"' " " as res `"`val'"'
+  5. }
+  v1                                                                1
+  nil                              NIL                              ADRIANO
+  id_nil                           ID_NIL                           17
+  areaha                           AreaHA                           243.15601
+  areamq                           AreaMQ                           2431560.109
+  geometry_x                                                        POLYGON ((9.255200505351251 45.519916680
+  total_income11                                                    458071457.9
+  avg_income11x                    avg_income11.x                   23257.58894
+  total_income21                                                    1804722134
+  avg_income21x                    avg_income21.x                   51397.78303
+  delta_avg                                                         120.9935998
+  compr_max21x                     Compr_max21.x                    3499.402985
+  compr_max11x                     Compr_max11.x                    2779.846583
+  census_edu21x                    Census_Edu21.x                   0.200077505
+  census_edu11x                    Census_Edu11.x                   0.135287177
+  census_employment21x             Census_Employment21.x            0.672305628
+  census_employment11x             Census_Employment11.x            0.700270626
+  avg_income11y                    avg_income11.y                   -0.31100107292232
+  avg_income21y                    avg_income21.y                   1.65923961275639
+  compr_max11y                     Compr_max11.y                    0.00913383976469695
+  compr_max21y                     Compr_max21.y                    0.0137798953463043
+  census_edu21y                    Census_Edu21.y                   -0.296681728590672
+  census_edu11y                    Census_Edu11.y                   -0.371655374681558
+  census_employment21y             Census_Employment21.y            -0.40008221367375
+  census_employment11y             Census_Employment11.y            -0.208567530757465
+  compounded_indicator11                                            9.71247632072537
+  compounded_indicator21                                            10.5124185287167
+  delta_gent                                                        0.799942207991329
+  avg_delta_gent                                                    0.0823623328979798
+
+. preserve
+
+. describe, replace clear
+
+. keep name varlab
+
+. export delimited using "$TAB/index_codebook.csv", replace
+file C:/Users/Salvatore/Downloads/milano_housing_stata/milano_housing/output/tables/index_codebook.csv saved
+
+. restore
+
+. 
+. * verifica della configurazione
+. local need IX_ID IX_NAME IX_INC11 IX_INC21 IX_PRICE11 IX_PRICE21 IX_EDU11 IX_EDU21 ///
+>     IX_EMP11 IX_EMP21 IX_IDX11 IX_IDX21
+
+. local bad
+
+. foreach g of local need {
+  2.     local vn = lower("${`g'}")
+  3.     if "`vn'" == "" {
+  4.         local bad `bad' `g'
+  5.         continue
+  6.     }
+  7.     capture confirm variable `vn'
+  8.     if _rc local bad `bad' `g'(`vn')
+  9. }
+
+. if "`bad'" != "" {
+.     di as error _n "  CONFIGURARE in 00_master.do (sezione 4) le colonne: `bad'"
+.     di as error "  Usare i nomi Stata elencati sopra (anche in $TAB/index_codebook.csv)."
+.     di as error "  I moduli 07 e 09 vengono saltati finche' la configurazione non e' completa."
+.     exit
+. }
+
+. 
+. * rinomina in due passaggi per evitare conflitti tra nomi
+. local pairs IX_ID:nil IX_NAME:name_ix IX_INC11:inc2011 IX_INC21:inc2021 ///
+>     IX_PRICE11:price2011 IX_PRICE21:price2021 IX_EDU11:edu2011 IX_EDU21:edu2021 ///
+>     IX_EMP11:emp2011 IX_EMP21:emp2021 IX_IDX11:idx2011 IX_IDX21:idx2021 ///
+>     IX_DELTA:delta_pub IX_GEOM:geom ///
+>     IX_ZINC11:zy_inc2011 IX_ZINC21:zy_inc2021 IX_ZPRICE11:zy_price2011 IX_ZPRICE21:zy_price2021 ///
+>     IX_ZEDU11:zy_edu2011 IX_ZEDU21:zy_edu2021 IX_ZEMP11:zy_emp2011 IX_ZEMP21:zy_emp2021
+
+. local i 0
+
+. local finals
+
+. foreach pr of local pairs {
+  2.     gettoken g fin : pr, parse(":")
+  3.     local fin = subinstr("`fin'", ":", "", 1)
+  4.     local vn = lower("${`g'}")
+  5.     if "`vn'" == "" continue
+  6.     capture confirm variable `vn'
+  7.     if _rc {
+  8.         di as txt "  (colonna facoltativa non trovata: `g' = `vn')"
+  9.         continue
+ 10.     }
+ 11.     local ++i
+ 12.     rename `vn' __ix`i'
+ 13.     local finals `finals' `fin'
+ 14. }
+
+. keep __ix*
+
+. forvalues j = 1/`i' {
+  2.     local fin : word `j' of `finals'
+  3.     rename __ix`j' `fin'
+  4. }
+
+. 
+. capture confirm variable geom
+
+. if !_rc {
+.     preserve
+.     keep nil geom
+.     export delimited using "$WORK/nil_geometry_wkt.csv", replace
+(file C:/Users/Salvatore/Downloads/milano_housing_stata/milano_housing/data/work/nil_geometry_wkt.csv not found)
+file C:/Users/Salvatore/Downloads/milano_housing_stata/milano_housing/data/work/nil_geometry_wkt.csv saved
+.     restore
+.     drop geom
+. }
+
+. local gm geom
+
+. local keepl : list finals - gm
+
+. keep `keepl'
+
+. local nm name_ix
+
+. local numl : list keepl - nm
+
+. tonum `numl'
+
+. replace name_ix = ustrtrim(name_ix)
+(1 real change made)
+
+. 
+. isid nil
+
+. di as txt "  NIL nel file dell'indice: " _N
+  NIL nel file dell'indice: 88
+
+. 
+. *------------------------------------------------------------------------------*
+. * Valori sospetti (non trattati come condizioni economiche reali)
+. *------------------------------------------------------------------------------*
+. gen byte flag_inc0   = (inc2011 == 0 | inc2021 == 0)
+
+. gen byte flag_price0 = (price2011 == 0 | price2021 == 0)
+
+. gen byte flag_edu0   = (edu2011 == 0 | edu2021 == 0)
+
+. gen byte flag_emp0   = (emp2011 == 0 | emp2021 == 0)
+
+. gen byte flag_miss   = missing(inc2011, inc2021, price2011, price2021, edu2011, edu2021, emp2011, emp2021)
+
+. gen byte valid_full   = !(flag_inc0 | flag_price0 | flag_edu0 | flag_emp0 | flag_miss)
+
+. gen byte valid_social = !missing(edu2011, edu2021, emp2011, emp2021) & flag_edu0 == 0 & flag_emp0 == 0
+
+. label variable valid_full   "Tutte e quattro le componenti valide (non nulle, non mancanti)"
+
+. label variable valid_social "Istruzione e occupazione valide in entrambi gli anni"
+
+. di as txt "  NIL con valori sospetti (attesi: Giardini Porta Venezia, Muggiano, Chiaravalle,"
+  NIL con valori sospetti (attesi: Giardini Porta Venezia, Muggiano, Chiaravalle,
+
+. di as txt "  Quintosole, Ronchetto delle Rane, Parco Sempione):"
+  Quintosole, Ronchetto delle Rane, Parco Sempione):
+
+. list nil name_ix flag_inc0 flag_price0 flag_edu0 flag_emp0 flag_miss if valid_full == 0, noobs
+
+  +-------------------------------------------------------------------------------------+
+  | nil                  name_ix   flag_i~0   flag_p~0   flag_~u0   flag_~p0   flag_m~s |
+  |-------------------------------------------------------------------------------------|
+  |  34              CHIARAVALLE          0          1          0          0          0 |
+  |   3   GIARDINI PORTA VENEZIA          1          0          0          0          0 |
+  |  54                 MUGGIANO          1          0          0          0          0 |
+  |   8           PARCO SEMPIONE          0          0          1          1          0 |
+  |  39               QUINTOSOLE          0          1          0          0          0 |
+  |-------------------------------------------------------------------------------------|
+  |  40     RONCHETTO DELLE RANE          0          1          0          0          0 |
+  +-------------------------------------------------------------------------------------+
+
+. capture confirm variable delta_pub
+
+. if !_rc {
+.     di as txt "  Variazione pubblicata per i NIL con reddito nullo (0/0 e' indefinito):"
+  Variazione pubblicata per i NIL con reddito nullo (0/0 e' indefinito):
+.     list nil name_ix inc2011 inc2021 delta_pub if flag_inc0 == 1, noobs
+
+  +---------------------------------------------------------------+
+  | nil                  name_ix   inc2011   inc2021    delta_pub |
+  |---------------------------------------------------------------|
+  |   3   GIARDINI PORTA VENEZIA         0         0   -.57867279 |
+  |  54                 MUGGIANO         0         0    .32602197 |
+  +---------------------------------------------------------------+
+. }
+
+. 
+. * redditi ripetuti su NIL distinti (non sommare i totali)
+. duplicates tag inc2011 inc2021, gen(dup_inc)
+
+Duplicates in terms of inc2011 inc2021
+
+. di as txt "  NIL distinti con redditi identici in entrambi gli anni:"
+  NIL distinti con redditi identici in entrambi gli anni:
+
+. list nil name_ix inc2011 inc2021 if dup_inc > 0 & flag_inc0 == 0, noobs sepby(inc2011)
+
+  +-------------------------------------------------------+
+  | nil                   name_ix     inc2011     inc2021 |
+  |-------------------------------------------------------|
+  |  80                    AFFORI   21688.421   25513.538 |
+  |-------------------------------------------------------|
+  |  46                    BARONA   21949.055   32558.638 |
+  |-------------------------------------------------------|
+  |  83                  BRUZZANO   21688.421   25513.538 |
+  |-------------------------------------------------------|
+  |  47                 CANTALUPA   21949.055   32558.638 |
+  |-------------------------------------------------------|
+  |  34               CHIARAVALLE   22780.815   29973.158 |
+  |-------------------------------------------------------|
+  |  82                  COMASINA   21688.421   25513.538 |
+  |-------------------------------------------------------|
+  |  37         EX OM - MORIVIONE   26115.887   24258.335 |
+  |-------------------------------------------------------|
+  |  63                    FIGINO   22297.159   45451.179 |
+  |-------------------------------------------------------|
+  |  41   GRATOSOGLIO - TICINELLO   21949.055   32558.638 |
+  |-------------------------------------------------------|
+  |  30                  MECENATE   22798.095    26070.26 |
+  |-------------------------------------------------------|
+  |  86         PARCO DEI NAVIGLI   21949.055   32558.638 |
+  |-------------------------------------------------------|
+  |  61            QUARTO CAGNINO   22297.159   45451.179 |
+  |-------------------------------------------------------|
+  |  76            QUARTO OGGIARO    17633.58   25067.731 |
+  |-------------------------------------------------------|
+  |  62             QUINTO ROMANO   22297.159   45451.179 |
+  |-------------------------------------------------------|
+  |  39                QUINTOSOLE   26115.887   24258.335 |
+  |-------------------------------------------------------|
+  |  33                  ROGOREDO   22798.095    26070.26 |
+  |-------------------------------------------------------|
+  |  40      RONCHETTO DELLE RANE   21949.055   32558.638 |
+  |-------------------------------------------------------|
+  |  74                     SACCO    17633.58   25067.731 |
+  |-------------------------------------------------------|
+  |  36              SCALO ROMANA   22780.815   29973.158 |
+  |-------------------------------------------------------|
+  |  75                STEPHENSON    17633.58   25067.731 |
+  +-------------------------------------------------------+
+
+. drop dup_inc
+
+. 
+. *------------------------------------------------------------------------------*
+. * Corrispondenza con il DS205 per codice (i nomi da soli non bastano)
+. *------------------------------------------------------------------------------*
+. preserve
+
+. use "$WORK/ds205_nil_year.dta", clear
+
+. keep if year == 2021
+(1,144 observations deleted)
+
+. keep nil name
+
+. tempfile n205
+
+. save `n205'
+file C:\Users\SALVAT~1\AppData\Local\Temp\ST_2c90_000004.tmp saved as .dta format
+
+. restore
+
+. merge 1:1 nil using `n205'
+
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                             0
+    Matched                                88  (_merge==3)
+    -----------------------------------------
+
+. gen k1 = ustrregexra(ustrlower(name_ix), "[^a-z0-9]", "")
+
+. gen k2 = ustrregexra(ustrlower(name), "[^a-z0-9]", "")
+
+. di as txt "  Stesso codice, nome diverso (attesi ID 73 e 74; nessuna correzione automatica):"
+  Stesso codice, nome diverso (attesi ID 73 e 74; nessuna correzione automatica):
+
+. list nil name_ix name if _merge == 3 & k1 != k2, noobs
+
+  +--------------------------------------------------------------------------------------------------+
+  | nil                        name_ix                                                          name |
+  |--------------------------------------------------------------------------------------------------|
+  |   3         GIARDINI PORTA VENEZIA                                         Giardini P.ta Venezia |
+  |   5                      VIGENTINA                              Porta Vigentina - Porta Lodovica |
+  |   6                       TICINESE                           Porta Ticinese - Conca del Naviglio |
+  |   9           GARIBALDI REPUBBLICA                                 Porta Garibaldi - Porta Nuova |
+  |  10                       CENTRALE                              Stazione Centrale - Ponte Seveso |
+  |--------------------------------------------------------------------------------------------------|
+  |  13                          GRECO                                               Greco - Segnano |
+  |  14          NIGUARDA - CA' GRANDA   Niguarda - Ca? Granda - Prato Centenaro - Q.re Fulvio Testi |
+  |  16                    VIALE MONZA                                              Gorla - Precotto |
+  |  18         PARCO LAMBRO - CIMIANO                               Cimiano - Rottole - Q.re Feltre |
+  |  19                         PADOVA                                  Padova - Turro - Crescenzago |
+  |--------------------------------------------------------------------------------------------------|
+  |  20                         LORETO                                     Loreto - Casoretto - NoLo |
+  |  21         BUENOS AIRES - VENEZIA                 Buenos Aires - Porta Venezia - Porta Monforte |
+  |  23                       LAMBRATE                                             Lambrate - Ortica |
+  |  24       PARCO FORLANINI - ORTICA                                    Parco Forlanini - Cavriano |
+  |  27                   PORTA ROMANA                                                    Pta Romana |
+  |--------------------------------------------------------------------------------------------------|
+  |  28                UMBRIA - MOLISE                                  Umbria - Molise - Calvairate |
+  |  30                       MECENATE                         Taliedo - Morsenchio - Q.re Forlanini |
+  |  31   PARCO MONLUE' - PONTE LAMBRO                                        Monlue' - Ponte Lambro |
+  |  33                       ROGOREDO                                       Rogoredo - Santa Giulia |
+  |  37              EX OM - MORIVIONE                                                     Morivione |
+  |--------------------------------------------------------------------------------------------------|
+  |  38                      RIPAMONTI                                       Vigentino - Q.re Fatima |
+  |  41        GRATOSOGLIO - TICINELLO                  Gratosoglio - Q.re Missaglia - Q.re Terrazze |
+  |  42                        STADERA        Stadera - Chiesa Rossa - Q.re Torretta - Conca Fallata |
+  |  44                        NAVIGLI                                    Porta Ticinese - Conchetta |
+  |  45                  S. CRISTOFORO                                     Moncucco - San Cristoforo |
+  |--------------------------------------------------------------------------------------------------|
+  |  48         RONCHETTO SUL NAVIGLIO                Ronchetto sul Naviglio - Q.re Lodovico il Moro |
+  |  50                        TORTONA                                                  Porta Genova |
+  |  51                     WASHINGTON                                                 Porta Magenta |
+  |  55                         BAGGIO                      Baggio - Q.re degli Olmi - Q.re Valsesia |
+  |  57                      SELINUNTE                                                      San Siro |
+  |--------------------------------------------------------------------------------------------------|
+  |  60                        S. SIRO                                            Stadio - Ippodromi |
+  |  65                    GALLARATESE             Q.re Gallaratese - Q.re San Leonardo - Lampugnano |
+  |  71                   VILLAPIZZONE                           Villapizzone - Cagnola - Boldinasco |
+  |  72             MAGGIORE - MUSOCCO                                  Maggiore - Musocco - Certosa |
+  |  73         CASCINA TRIULZA - EXPO                                               Cascina Merlata |
+  |--------------------------------------------------------------------------------------------------|
+  |  74                          SACCO                                                       Roserio |
+  |  76                 QUARTO OGGIARO                             Quarto Oggiaro - Vialba - Musocco |
+  |  87             PARCO AGRICOLO SUD                                                       Assiano |
+  |  88            PARCO BOSCO IN CITT                                         Parco Bosco in citta' |
+  +--------------------------------------------------------------------------------------------------+
+
+. di as txt "  Codici presenti in un solo file:"
+  Codici presenti in un solo file:
+
+. list nil name_ix name _merge if _merge != 3, noobs
+
+. drop if _merge == 2
+(0 observations deleted)
+
+. drop _merge k1 k2 name
+
+. 
+. sort nil
+
+. save "$WORK/index_nil.dta", replace
+(file C:/Users/Salvatore/Downloads/milano_housing_stata/milano_housing/data/work/index_nil.dta not found)
+file C:/Users/Salvatore/Downloads/milano_housing_stata/milano_housing/data/work/index_nil.dta saved
+
+. global IX_OK 1
+
+. 
+end of do-file
+
+. di as txt _n "Fine: `c(current_date)' `c(current_time)'  IX_OK=" $IX_OK
+
+Fine: 20 Nov 2026 14:40:14  IX_OK=1
+
+. log close main
+      name:  main
+       log:  C:/Users/Salvatore/Downloads/milano_housing_stata/milano_housing/output/logs/run_01_05.log
+  log type:  text
+ closed on:  20 Nov 2026, 14:40:14
+----------------------------------------------------------------------------------------------------------------------------------------------------------------

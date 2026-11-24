@@ -1,0 +1,12 @@
+# File oltre il limite di 100 MB di GitHub: da scaricare a parte (vedi README)
+data/raw/ds27_pop_sto_quartiere.csv
+data/raw/ds1441_popolazione_famiglie_tipologia_quartiere.csv
+
+# File di sistema e temporanei
+.Rhistory
+.DS_Store
+Thumbs.db
+desktop.ini
+~$*
+*.tmp
+*.stswp
