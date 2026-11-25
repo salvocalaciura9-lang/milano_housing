@@ -33,9 +33,21 @@ foreach g in RAW:data/raw WORK:data/work TAB:output/tables {
     local p = subinstr("`p'", ":", "", 1)
     if "${`k'}" == "" global `k' "$ROOT/`p'"
 }
+* Il CSV (157 MB) supera il limite di GitHub: nel repository c'e' lo zip.
+* Se manca il CSV, lo si estrae dallo zip.
 capture confirm file "$RAW/ds27_pop_sto_quartiere.csv"
 if _rc {
-    di as error "  manca ds27_pop_sto_quartiere.csv: 03c saltato"
+    capture confirm file "$RAW/ds27_pop_sto_quartiere.zip"
+    if _rc == 0 {
+        local here `"`c(pwd)'"'
+        quietly cd "$RAW"
+        unzipfile "ds27_pop_sto_quartiere.zip", replace
+        quietly cd `"`here'"'
+    }
+}
+capture confirm file "$RAW/ds27_pop_sto_quartiere.csv"
+if _rc {
+    di as error "  manca ds27_pop_sto_quartiere.csv (o .zip): 03c saltato"
     exit
 }
 

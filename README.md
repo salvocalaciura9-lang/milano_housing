@@ -5,16 +5,16 @@ Codice per l'analisi descritta in *Milano_Research_Proposal.docx*. Stata 16 o su
 ## 0. Repository
 
 Il repository contiene codice, dati grezzi (`data/raw`), file intermedi (`data/work`) e
-output. Due file superano il limite di 100 MB di GitHub e sono esclusi (`.gitignore`):
+output. Due CSV superano il limite di 100 MB di GitHub: nel repository ci sono
+compressi in `.zip` (il CSV è escluso con `.gitignore`):
 
-| File | Fonte | Usato da |
-|---|---|---|
-| `ds27_pop_sto_quartiere.csv` | Open Data Comune di Milano, dataset ds27 (residenti per età, cittadinanza e NIL) | modulo 03c; senza il file il modulo si salta, ma il suo output `data/work/nil_composition_year.dta` è già nel repository |
-| `ds1441_popolazione_famiglie_tipologia_quartiere.csv` | Open Data Comune di Milano, dataset ds1441 | nessun modulo |
+| File nel repository | CSV estratto | Fonte | Usato da |
+|---|---|---|---|
+| `data/raw/ds27_pop_sto_quartiere.zip` (13 MB) | 157 MB | Open Data Comune di Milano, dataset ds27 (residenti per età, cittadinanza e NIL) | modulo 03c, che estrae il CSV dallo zip da solo se manca |
+| `data/raw/ds1441_popolazione_famiglie_tipologia_quartiere.zip` (6 MB) | 103 MB | Open Data Comune di Milano, dataset ds1441 | nessun modulo (estrarlo a mano se serve) |
 
-Per rieseguire 03c, scaricate ds27 dal portale Open Data del Comune e copiatelo in
-`data/raw/` con questo nome. Le analisi richiedono Stata: in una sessione cloud si
-possono leggere e modificare codice e testi, non eseguire i do-file.
+Le analisi richiedono Stata: in una sessione cloud si possono leggere e modificare
+codice e testi, non eseguire i do-file.
 
 ## 1. Preparazione
 
