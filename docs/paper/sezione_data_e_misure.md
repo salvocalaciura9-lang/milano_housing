@@ -60,6 +60,10 @@ $$NM^{c}_{it}=1000\cdot\frac{\sum_{a\in c}P_{i,a+1,t}-\sum_{a\in c}P_{i,a,t-1}}{
 
 $NM^{c}_{it}$ is the net change in cohort size. It nets out inflows against outflows, including moves between NILs. Births do not enter it, but it also absorbs deaths, which are small below age 65, and registry corrections. It is therefore net migration only in an approximate sense. A balance near zero may hide large gross flows. Neither measure separates voluntary mobility from involuntary displacement.
 
+### 2.6 Limitations of the measures
+
+Five limitations bound what the measures can show. First, OMI quotations are valuation ranges for dwellings in normal condition; they may lag contract rents and miss the gap between new lets and sitting tenants. Second, the denominator is the net income of one median taxpayer for the whole city. It excludes non-filers and untaxed transfers, ignores family deductions, and gives every NIL the same income, so $A_{it}$ cannot capture what local residents actually earn. Third, the index compares a standard dwelling with individual income and covers rent only, whereas Eurostat counts total housing costs; $S_t$ is therefore an indicator of market access, not an overburden rate. Fourth, NIL rents rest on area weights and on zone boundaries that change in 2014 and 2024; the coverage rule removes six peripheral NILs from the balanced panel, and 2004–2010 population weights are fixed at their 2011 values. Fifth, registry exits omit moves within Milan, and $NM^c$ also absorbs deaths and administrative corrections; neither measure identifies who moved, why, or whether the move was involuntary.
+
 ---
 
 ### References (verified 25 November 2026)
