@@ -37,7 +37,13 @@
 *     (15/28/55/75 mila); 2023-2024 1,23/1,58/1,72/1,73% (15/28/50 mila).
 *     Il 2011 usa gia' le aliquote 2012: il gettito vero 2011 (0,419 mld, MEF)
 *     e' al livello del 2012 (0,424), non del 2010 (0,329).
-*     2007-2010: APPROSSIMATA (0,9% fino a 15.493,71; 1,3% fino a 30.987,41;
+*   2004-2006 (riforma Tremonti): nessuna detrazione per tipo di reddito, ma una
+*     deduzione dal reddito D x (26.000 + D - R)/26.000 (D = 7.500 dipendenti,
+*     7.000 pensionati, 4.500 autonomi); IRPEF 2004 23/29/31/39/45% (15/29/32,6/70
+*     mila), 2005-2006 23/33/39/43% (26/33,5/100 mila). Niente bonus, niente
+*     addizionale comunale. Parametri inseriti a memoria e controllati con
+*     l'imposta netta vera (sezione 4).
+*     2004-2010: APPROSSIMATA (0,9% fino a 15.493,71; 1,3% fino a 30.987,41;
 *     1,4% oltre); il modello resta entro il 7% del gettito vero (sezione 4).
 *   Le addizionali sono dovute solo se l'IRPEF netta e' positiva.
 *
@@ -73,8 +79,8 @@ input double R
 40000
 55000
 end
-expand 3
-bysort R: gen year = cond(_n==1, 2010, cond(_n==2, 2018, 2024))
+expand 4
+bysort R: gen year = cond(_n==1, 2005, cond(_n==2, 2010, cond(_n==3, 2018, 2024)))
 foreach s in dip pen aut nod {
     netinc R, year(year) type(`s') gen(net_`s')
 }
@@ -86,9 +92,9 @@ export delimited using "$TAB/income_net_check.csv", replace
 
 *--- 2. Classi di reddito del ds531 -> classi nette ----------------------------*
 * classi 2004-2024 preparate dal modulo 18 (ds531 + file MEF 2004-2007);
-* il netto si calcola dal 2007, quando entrano in vigore le regole del TUIR usate qui
+* il netto si calcola dal 2004 (2004-2006 con le regole della riforma Tremonti)
 use "$WORK/milano_income_classes.dta", clear
-keep if year >= 2007
+keep if year >= 2004
 gen double avg = amt/n
 gen double share = (ntot/2 - cum0)/n if inmed
 * lordo (come nel modulo 18)
@@ -133,7 +139,7 @@ export delimited using "$TAB/income_net_scenarios.csv", replace
 
 *--- 3. Affordability sul netto -------------------------------------------------*
 use "$WORK/aff_nil_year.dta", clear
-keep if balanced & year >= 2007
+keep if balanced & year >= 2004
 merge m:1 year using "$WORK/milano_income_net.dta", keepusing(ymed_*) keep(match) nogen
 foreach s in dip pen aut nod {
     gen double An_`s' = 12*60*R/ymed_`s'
@@ -164,7 +170,7 @@ twoway (connected sh30_gross year, lcolor("37 106 191") mcolor("37 106 191") msi
        (connected sh40_dip year, lcolor("200 90 50") mcolor("200 90 50") msize(small)) ///
        (line sh40_nod year, lcolor("200 90 50%50") lpattern(dash)) ///
        (line sh40_aut year, lcolor("200 90 50%50") lpattern(shortdash)), ///
-       ylabel(0(.2)1, format(%3.1f)) xlabel(2007(2)2023 2024) ///
+       ylabel(0(.2)1, format(%3.1f)) xlabel(2004(2)2024) ///
        ytitle("Quota di residenti in NIL oltre la soglia") xtitle("") ///
        title("Affitto di 60 m2: 30% del lordo e 40% del netto (soglia OCSE)", size(medsmall)) ///
        legend(order(1 "30% del reddito lordo mediano" 2 "40% del netto, dipendente" ///
@@ -177,7 +183,7 @@ graph export "$FIG/aff_net_share.png", replace width(2400)
 
 *--- 4. Controllo con le imposte effettivamente pagate a Milano ---------------*
 * Totali per anno d'imposta di imposta netta, addizionale regionale e comunale
-* dovute: ds312 del Comune per il 2012-2024, file MEF comunali per il 2007-2011. Si confrontano con le imposte che il
+* dovute: ds312 del Comune per il 2012-2024, file MEF comunali per il 2004-2011. Si confrontano con le imposte che il
 * modello attribuisce a ogni classe (calcolate al reddito medio della classe).
 * L'imposta netta vera comprende tutte le detrazioni (familiari, spese mediche,
 * ristrutturazioni, mutuo) e si calcola sul reddito imponibile, non sul complessivo.
@@ -198,13 +204,13 @@ rename (amtimp amtirp amtreg amtcom freqcom freqirp) (act_imponibile act_irp act
 tempfile act
 save `act'
 
-* 2007-2011: riga di Milano dei file MEF "redditi e principali variabili IRPEF
+* 2004-2011: riga di Milano dei file MEF "redditi e principali variabili IRPEF
 * su base comunale" (2011: somma dei CAP del file subcomunale), estratta in
 * data/raw/mef_comunale_milano.csv (formato lungo: anno;variabile;valore)
 import delimited using "$RAW/mef_comunale_milano.csv", clear delimiter(";") ///
     varnames(1) encoding("utf-8") stringcols(2)
 rename anno year
-keep if inrange(year, 2007, 2011)
+keep if inrange(year, 2004, 2011)
 gen str8 k = ""
 replace k = "imp"  if strpos(variabile, "Reddito imponibile - Ammontare")
 replace k = "irp"  if strpos(variabile, "Imposta netta - Ammontare")
@@ -222,7 +228,7 @@ sort year
 save `act', replace
 
 use "$WORK/milano_income_classes.dta", clear
-keep if inrange(year, 2007, 2024)
+keep if inrange(year, 2004, 2024)
 gen double avg = amt/n
 foreach s in dip pen aut nod {
     netinc avg, year(year) type(`s') gen(nt_`s') irpout(i_`s') regout(r_`s') comout(c_`s')
@@ -276,7 +282,7 @@ gen double sh40_cal = p40/pop_ok
 drop p40 pop_ok
 format y_med ymed_dip ymed_cal %9.0fc
 format k_cal ratio_cal sh40_cal %5.3f
-di as txt _n "  Scenario calibrato sulle imposte vere (MEF 2007-2011, ds312 2012-2024):"
+di as txt _n "  Scenario calibrato sulle imposte vere (MEF 2004-2011, ds312 2012-2024):"
 list, noobs sep(0) abbrev(10)
 export delimited using "$TAB/income_net_calibrated.csv", replace
 

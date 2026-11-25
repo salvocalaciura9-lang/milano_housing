@@ -2,7 +2,7 @@
 * 18_affordability_milano.do
 * Evoluzione dell'affordability degli affitti a Milano per il "cittadino tipico"
 *
-* Indice principale (dal 2007):
+* Indice principale (dal 2004):
 *   A_it = 12 x S x affitto OMI_it (EUR/m2/mese, punto medio) / reddito NETTO mediano_t
 *   quartiere "fuori portata" se A_it > 0,40: soglia OCSE/Eurostat di sovraccarico
 *   (OECD Affordable Housing Database, HC1.2.3: affitto o mutuo > 40% del reddito
@@ -37,7 +37,7 @@
 *   - Esclusi i NIL con meno di $SMALL_NIL residenti nel 2019 (parchi, scali).
 *
 * Output
-*   $WORK/milano_income.dta         reddito mediano lordo (2004-2024) e netto (2007-2024), medio
+*   $WORK/milano_income.dta         reddito mediano lordo e netto, 2004-2024, e medio
 *   $WORK/milano_income_classes.dta classi di reddito per anno (per il modulo 18b)
 *   $WORK/omi_nil_year_long.dta     affitto OMI per NIL e anno, 2004-2025
 *   $WORK/omi_zone21_year.dta       affitto OMI per zona (zonizzazione 2021), 2014-2025
@@ -142,7 +142,7 @@ save "$WORK/milano_income_classes.dta", replace
 do "$CODE/netinc_program.do"
 netinc lo, year(year) type(dip) gen(nlo)
 netinc hi, year(year) type(dip) gen(nhi)
-replace nlo = lo if lo < 0 & year >= 2007
+replace nlo = lo if lo < 0 & year >= 2004
 gen double med_net = nlo + (ntot/2 - cum0)/n*(nhi - nlo) if inmed
 collapse (max) y_med = med y_med_net = med_net (first) n_contr = ntot amt_tot = atot, by(year)
 gen double y_mean = amt_tot/n_contr
@@ -280,7 +280,7 @@ merge m:1 nil using `p19', keep(master match) nogen
 replace pop = pop2011 if year < 2011
 bysort nil (name): replace name = name[_N]
 drop if pop2019 < $SMALL_NIL
-* indice principale sul netto (dal 2007), controllo sul lordo (dal 2004)
+* indice principale sul netto e controllo sul lordo, 2004-2024
 gen double A60  = 12*60*R/y_med_net
 gen double A40  = 12*40*R/y_med_net
 gen double A60d = 12*60*R/(2*y_med_net)
@@ -346,7 +346,7 @@ twoway (connected sh_pop_A60  year, lcolor("37 106 191") mcolor("37 106 191") ms
               4 "controllo: 30% del lordo") rows(2) size(small) position(6)) ///
        graphregion(color(white)) ///
        note("Affitto OMI (punto medio, abitazioni civili) / reddito netto mediano dei contribuenti milanesi; soglia 40% (OCSE)." ///
-            "Netto stimato da ds531 con IRPEF, addizionali e bonus (detrazioni da lavoro dipendente), dal 2007.", size(vsmall))
+            "Netto stimato da ds531 con IRPEF, addizionali e bonus (detrazioni da lavoro dipendente; 2004-2006 deduzione no tax area).", size(vsmall))
 graph export "$FIG/aff_share_above40.png", replace width(2400)
 restore
 
