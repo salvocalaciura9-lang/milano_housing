@@ -205,6 +205,18 @@ foreach T in nil zona {
     tempfile w_`T'
     omi_weights `T' `w_`T''
     use `sem', clear
+    if "`T'" == "nil" {
+        * La zona C14 (Porta Nuova) e' quotata solo dal 2018S2, ma e' gia' nella
+        * mappa 2014-2024: prima la sua area resterebbe scoperta (Porta Garibaldi
+        * fuori dal pannello, salto artificiale a Isola nel 2018S2). Fino al
+        * 2018S1 le si attribuisce l'affitto della C12, da cui e' stata ricavata
+        * (nel 2018S2 C14 15,0 e C12 15,6 EUR/m2). Solo per i NIL: a livello di
+        * zona (modulo 19) la C14 resta senza dati prima del 2018S2.
+        bysort anno sem: egen byte hasC14 = max(z == "C14")
+        expand 2 if z == "C12" & scheme == 21 & !hasC14, gen(dupC14)
+        replace z = "C14" if dupC14
+        drop hasC14 dupC14
+    }
     joinby scheme z using `w_`T''
     local tv = cond("`T'" == "zona", "zona", "nil")
     gen double num = npt*R_mid
