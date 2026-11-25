@@ -33,10 +33,12 @@
 *     2008-2010 non istituita; 2011 0,2%; 2012 0,2-0,8% per scaglioni;
 *     esenzione 33.500 (2011-2012), 21.000 (2013-2019), 23.000 (2020-2024);
 *     2013-2024 aliquota unica 0,8%. Sopra la soglia si paga su tutto il reddito.
-*   Addizionale regionale Lombardia: 2012-2022 1,23/1,58/1,72/1,73/1,74%
+*   Addizionale regionale Lombardia: 2011-2022 1,23/1,58/1,72/1,73/1,74%
 *     (15/28/55/75 mila); 2023-2024 1,23/1,58/1,72/1,73% (15/28/50 mila).
-*     2008-2011: APPROSSIMATA (0,9% fino a 15.493,71; 1,3% fino a 30.987,41;
-*     1,4% oltre), da verificare sulla l.r. 10/2003 art. 72 di quegli anni.
+*     Il 2011 usa gia' le aliquote 2012: il gettito vero 2011 (0,419 mld, MEF)
+*     e' al livello del 2012 (0,424), non del 2010 (0,329).
+*     2007-2010: APPROSSIMATA (0,9% fino a 15.493,71; 1,3% fino a 30.987,41;
+*     1,4% oltre); il modello resta entro il 7% del gettito vero (sezione 4).
 *   Le addizionali sono dovute solo se l'IRPEF netta e' positiva.
 *
 * Output
@@ -173,9 +175,9 @@ twoway (connected sh30_gross year, lcolor("37 106 191") mcolor("37 106 191") msi
             "Mediana stimata sulle classi di reddito del ds531 trasformate in classi nette.", size(vsmall))
 graph export "$FIG/aff_net_share.png", replace width(2400)
 
-*--- 4. Controllo con le imposte effettivamente pagate a Milano (ds312) -------*
-* ds312 (Comune di Milano): totali per anno d'imposta 2012-2024 di imposta netta,
-* addizionale regionale e comunale dovute. Si confrontano con le imposte che il
+*--- 4. Controllo con le imposte effettivamente pagate a Milano ---------------*
+* Totali per anno d'imposta di imposta netta, addizionale regionale e comunale
+* dovute: ds312 del Comune per il 2012-2024, file MEF comunali per il 2007-2011. Si confrontano con le imposte che il
 * modello attribuisce a ogni classe (calcolate al reddito medio della classe).
 * L'imposta netta vera comprende tutte le detrazioni (familiari, spese mediche,
 * ristrutturazioni, mutuo) e si calcola sul reddito imponibile, non sul complessivo.
@@ -196,8 +198,31 @@ rename (amtimp amtirp amtreg amtcom freqcom freqirp) (act_imponibile act_irp act
 tempfile act
 save `act'
 
+* 2007-2011: riga di Milano dei file MEF "redditi e principali variabili IRPEF
+* su base comunale" (2011: somma dei CAP del file subcomunale), estratta in
+* data/raw/mef_comunale_milano.csv (formato lungo: anno;variabile;valore)
+import delimited using "$RAW/mef_comunale_milano.csv", clear delimiter(";") ///
+    varnames(1) encoding("utf-8") stringcols(2)
+rename anno year
+keep if inrange(year, 2007, 2011)
+gen str8 k = ""
+replace k = "imp"  if strpos(variabile, "Reddito imponibile - Ammontare")
+replace k = "irp"  if strpos(variabile, "Imposta netta - Ammontare")
+replace k = "nirp" if strpos(variabile, "Imposta netta - Frequenza")
+replace k = "reg"  if strpos(variabile, "Addizionale regionale dovuta - Ammontare")
+replace k = "com"  if strpos(variabile, "Addizionale comunale dovuta - Ammontare")
+replace k = "ncom" if strpos(variabile, "Addizionale comunale dovuta - Frequenza")
+keep if k != ""
+keep year k valore
+reshape wide valore, i(year) j(k) string
+rename (valoreimp valoreirp valorenirp valorereg valorecom valorencom) ///
+       (act_imponibile act_irp act_nirp act_reg act_com act_ncom)
+append using `act'
+sort year
+save `act', replace
+
 use "$WORK/milano_income_classes.dta", clear
-keep if inrange(year, 2012, 2024)
+keep if inrange(year, 2007, 2024)
 gen double avg = amt/n
 foreach s in dip pen aut nod {
     netinc avg, year(year) type(`s') gen(nt_`s') irpout(i_`s') regout(r_`s') comout(c_`s')
@@ -206,7 +231,8 @@ foreach s in dip pen aut nod {
     }
 }
 * contribuenti sopra la soglia di esenzione comunale (uniformi dentro la classe)
-gen double thr = cond(year == 2012, 33500, cond(year <= 2019, 21000, 23000))
+* (fino al 2010 l'addizionale comunale di Milano non era istituita: soglia mancante, ncom = 0)
+gen double thr = cond(year <= 2010, ., cond(year <= 2012, 33500, cond(year <= 2019, 21000, 23000)))
 gen double ncom = cond(lo >= thr, n, cond(hi > thr & lo < thr, n*(hi - thr)/(hi - lo), 0))
 replace ncom = n if missing(hi) & lo >= thr
 collapse (sum) amt i_* r_* c_* ncom, by(year)
@@ -250,6 +276,33 @@ gen double sh40_cal = p40/pop_ok
 drop p40 pop_ok
 format y_med ymed_dip ymed_cal %9.0fc
 format k_cal ratio_cal sh40_cal %5.3f
-di as txt _n "  Scenario calibrato sulle imposte vere (ds312):"
+di as txt _n "  Scenario calibrato sulle imposte vere (MEF 2007-2011, ds312 2012-2024):"
 list, noobs sep(0) abbrev(10)
 export delimited using "$TAB/income_net_calibrated.csv", replace
+
+*--- 6. Tipi di reddito dei contribuenti milanesi -------------------------------*
+* Quanti contribuenti hanno redditi da lavoro dipendente, da pensione, da lavoro
+* autonomo (file MEF comunali; 2011 somma dei CAP). Un contribuente puo' avere
+* piu' tipi di reddito, quindi le quote non sommano a 1. Serve a motivare
+* l'ipotesi sulle detrazioni dell'indice principale.
+import delimited using "$RAW/mef_comunale_milano.csv", clear delimiter(";") ///
+    varnames(1) encoding("utf-8") stringcols(2)
+rename anno year
+gen str4 k = ""
+replace k = "n"   if strpos(variabile, "Numero contribuenti")
+replace k = "dip" if strpos(variabile, "Reddito da lavoro dipendente") & strpos(variabile, "Frequenza")
+replace k = "pen" if strpos(variabile, "Reddito da pensione") & strpos(variabile, "Frequenza")
+replace k = "aut" if strpos(variabile, "Reddito da lavoro autonomo") & strpos(variabile, "Frequenza")
+keep if k != ""
+* (2004-2005: lavoro autonomo in due voci, sez. E-IA e E-IB: si sommano)
+collapse (sum) valore, by(year k)
+reshape wide valore, i(year) j(k) string
+rename valore* *
+foreach t in dip pen aut {
+    gen double sh_`t' = `t'/n
+}
+format n dip pen aut %10.0fc
+format sh_* %4.2f
+di as txt _n "  Contribuenti milanesi per tipo di reddito:"
+list year n dip pen aut sh_dip sh_pen sh_aut, noobs sep(0)
+export delimited using "$TAB/income_types_milano.csv", replace

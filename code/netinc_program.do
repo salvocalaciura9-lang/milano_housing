@@ -73,10 +73,10 @@ program define netinc
     }
     * addizionale regionale Lombardia (aliquote per scaglioni)
     gen double `areg' = .009*min(`r',15493.71) + .013*max(min(`r',30987.41)-15493.71,0) + ///
-        .014*max(`r'-30987.41,0) if `y' <= 2011
+        .014*max(`r'-30987.41,0) if `y' <= 2010
     replace `areg' = .0123*min(`r',15000) + .0158*max(min(`r',28000)-15000,0) + ///
         .0172*max(min(`r',55000)-28000,0) + .0173*max(min(`r',75000)-55000,0) + ///
-        .0174*max(`r'-75000,0) if inrange(`y',2012,2022)
+        .0174*max(`r'-75000,0) if inrange(`y',2011,2022)
     replace `areg' = .0123*min(`r',15000) + .0158*max(min(`r',28000)-15000,0) + ///
         .0172*max(min(`r',50000)-28000,0) + .0173*max(`r'-50000,0) if `y' >= 2023
     * addizionale comunale Milano (soglia di esenzione: sopra la soglia si paga su tutto)
