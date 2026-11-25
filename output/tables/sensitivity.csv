@@ -1,9 +1,9 @@
 model,n_spec,n_same,n_excl0,b_main
 M1 NIL: uscite 2022-24 su upgrading 2011-21,14,6,2,-1.024237183505267
-M2 CAP: dlnAP,1,1,0,.0772866586628148
-M2 CAP: dlnAR_base,1,1,1,.1494242670824819
-M2 CAP: dlnAR_lav,1,1,1,.1671109678251478
-M2 CAP: dlnAR_max,1,1,0,.0979097087625031
-M2 CAP: dlnAR_min,1,1,0,.0778630484591636
-M2 CAP: variazione log affordability affitto 2019-2023,4,4,0,.0909163620938527
-M3 panel FE: uscite t+1 su log affordability t,13,12,3,7.293270209087895
+M2 CAP: dlnAP,1,1,0,.0772866586628149
+M2 CAP: dlnAR_base,1,1,1,.1494242670824815
+M2 CAP: dlnAR_lav,1,1,1,.1671109678251475
+M2 CAP: dlnAR_max,1,1,0,.0979097087625032
+M2 CAP: dlnAR_min,1,1,0,.0778630484591638
+M2 CAP: variazione log affordability affitto 2019-2023,4,4,0,.0909163620938525
+M3 panel FE: uscite t+1 su log affordability t,13,12,3,7.293270209087994

@@ -139,7 +139,7 @@ export delimited using "$TAB/income_net_scenarios.csv", replace
 
 *--- 3. Affordability sul netto -------------------------------------------------*
 use "$WORK/aff_nil_year.dta", clear
-keep if balanced & year >= 2004
+keep if balanced & year >= 2014   // indice principale: zonizzazione OMI attuale (modulo 18)
 merge m:1 year using "$WORK/milano_income_net.dta", keepusing(ymed_*) keep(match) nogen
 foreach s in dip pen aut nod {
     gen double An_`s' = 12*60*R/ymed_`s'
@@ -170,7 +170,7 @@ twoway (connected sh30_gross year, lcolor("37 106 191") mcolor("37 106 191") msi
        (connected sh40_dip year, lcolor("200 90 50") mcolor("200 90 50") msize(small)) ///
        (line sh40_nod year, lcolor("200 90 50%50") lpattern(dash)) ///
        (line sh40_aut year, lcolor("200 90 50%50") lpattern(shortdash)), ///
-       ylabel(0(.2)1, format(%3.1f)) xlabel(2004(2)2024) ///
+       ylabel(0(.2)1, format(%3.1f)) xlabel(2014(1)2024) ///
        ytitle("Quota di residenti in NIL oltre la soglia") xtitle("") ///
        title("Affitto di 60 m2: 30% del lordo e 40% del netto (soglia OCSE)", size(medsmall)) ///
        legend(order(1 "30% del reddito lordo mediano" 2 "40% del netto, dipendente" ///
@@ -273,7 +273,7 @@ gen double ratio_cal = ymed_cal/y_med
 tempfile cal
 save `cal'
 use "$WORK/aff_nil_year.dta", clear
-keep if balanced
+keep if balanced & year >= 2014
 merge m:1 year using `cal', keep(match) nogen
 gen double p40 = pop*(12*60*R/ymed_cal > .40) if !missing(R)
 gen double pop_ok = pop if !missing(R)
