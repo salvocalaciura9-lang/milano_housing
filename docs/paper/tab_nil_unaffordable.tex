@@ -1,0 +1,114 @@
+% =============================================================================
+% Unaffordable NILs: share above the 40% threshold and ranking of NILs (2024)
+% Generated from data/work/aff_nil_year.dta and output/tables/aff_city_year.csv
+% (data after commit f4d35f2 on main; balanced panel of 75 NILs).
+% Standalone: compile with pdflatex. To include in the paper, copy the text
+% between \begin{document} and \end{document} (packages: booktabs, tabularx).
+% =============================================================================
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+\begin{document}
+
+\subsection*{How many NILs are out of reach?}
+
+A NIL is classified as unaffordable when the annual OMI rent of a standard
+60~m$^2$ dwelling exceeds 40\% of the median net income of Milanese taxpayers
+($D_{it}=1$). Table~\ref{tab:share} reports the share of NILs and the share of
+residents in NILs above the threshold for every year of the balanced panel
+(75 NILs). In 2024, 27 of 75 NILs (36.0\%) are above the threshold, and they host 43.2\% of the residents of the panel. The share of residents was 45.6\% in 2007 and 27.1\% in 2018.
+
+Table~\ref{tab:rank} lists the five most and the five least affordable NILs
+in 2024. With a median net income of EUR~21,559, the
+threshold corresponds to a rent of about EUR~11.98
+per m$^2$ per month. The most affordable NILs are peripheral (south and west of
+the city and the north-west), where a 60~m$^2$ flat absorbs roughly a quarter
+to a third of the median net income. The least affordable are central: in
+Duomo and Brera the same flat would absorb more than 80\%. Because income is a
+single city-wide value, the ranking is a ranking of OMI rents; NILs in the
+same OMI zone receive similar values.
+
+\begin{table}[htbp]
+\centering
+\caption{Share of NILs and of residents above the 40\% threshold}\label{tab:share}
+\small
+\begin{tabular}{@{}lrr@{}}
+\toprule
+Year & NILs above threshold (\%) & Residents in those NILs (\%) \\
+\midrule
+2007 & 37.3 & 45.6 \\
+2008 & 33.3 & 40.0 \\
+2009 & 28.0 & 35.3 \\
+2010 & 28.0 & 35.3 \\
+2011 & 28.0 & 35.3 \\
+2012 & 29.3 & 36.4 \\
+2013 & 28.0 & 34.9 \\
+2014 & 26.7 & 29.4 \\
+2015 & 21.3 & 24.7 \\
+2016 & 25.3 & 29.5 \\
+2017 & 25.3 & 29.5 \\
+2018 & 22.7 & 27.1 \\
+2019 & 25.3 & 29.5 \\
+2020 & 26.7 & 29.9 \\
+2021 & 24.0 & 28.2 \\
+2022 & 26.7 & 29.7 \\
+2023 & 30.7 & 34.9 \\
+2024 & 36.0 & 43.2 \\
+\bottomrule
+\end{tabular}
+
+\vspace{4pt}
+\begin{minipage}{0.75\linewidth}
+\footnotesize\emph{Notes:} balanced panel of 75 NILs with OMI rent observed
+in every year 2004--2024. Threshold: $A_{it}=12\cdot60\cdot R_{it}/Y^{net}_t>0.40$.
+Residents are DS205 counts. Source: \texttt{aff\_city\_year.csv} (module 18).
+\end{minipage}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{The five most and the five least affordable NILs, 2024}\label{tab:rank}
+\small
+\begin{tabularx}{\linewidth}{@{}rLrrrrr@{}}
+\toprule
+Rank & NIL (code) & Residents & Rent & Annual rent & $A_{i,2024}$ & $A_{i,2007}$ \\
+ & & 2024 & (EUR/m$^2$/month) & 60 m$^2$ (EUR) & (\%) & (\%) \\
+\midrule
+\multicolumn{7}{@{}l}{\emph{Most affordable}} \\
+1 & Gratosoglio - Q.re Missaglia - Q.re Terrazze (41) & 18,912 & 7.69 & 5,534 & 25.7 & 37.7 \\
+2 & Quarto Oggiaro - Vialba - Musocco (76) & 32,744 & 7.73 & 5,569 & 25.8 & 29.9 \\
+3 & Muggiano (54) & 3,045 & 9.32 & 6,714 & 31.1 & 30.0 \\
+4 & Quinto Romano (62) & 4,744 & 9.33 & 6,714 & 31.1 & 30.0 \\
+5 & Baggio - Q.re degli Olmi - Q.re Valsesia (55) & 30,860 & 9.68 & 6,971 & 32.3 & 31.5 \\
+\midrule
+\multicolumn{7}{@{}l}{\emph{Least affordable}} \\
+75 & Duomo (1) & 16,226 & 25.11 & 18,082 & 83.9 & 94.8 \\
+74 & Brera (2) & 18,361 & 24.53 & 17,659 & 81.9 & 86.2 \\
+73 & Guastalla (4) & 15,470 & 21.05 & 15,158 & 70.3 & 80.7 \\
+72 & Porta Garibaldi - Porta Nuova (9) & 5,817 & 18.73 & 13,488 & 62.6 & 53.3 \\
+71 & Magenta - S.Vittore (7) & 18,026 & 17.76 & 12,789 & 59.3 & 63.3 \\
+\bottomrule
+\end{tabularx}
+
+\vspace{4pt}
+\begin{minipage}{\linewidth}
+\footnotesize\emph{Notes:} rank among the 75 NILs of the balanced panel
+(1 = most affordable, 75 = least affordable). Rent: OMI midpoint for civil
+dwellings in normal condition, area-weighted from OMI zones to NILs, mean of
+the semesters of 2024. $A_{it}$: annual rent of 60~m$^2$ over the median net
+income of Milanese taxpayers (EUR~21,559 in 2024;
+EUR~15,590 in 2007). All ten NILs are on the same side
+of the 40\% threshold in 2007 and 2024. 2007 values use the pre-2014 OMI zoning. Ranks 3 and 4 (Muggiano, Quinto Romano) have
+virtually identical rents; ranks 5 and 6 differ by 0.6 percentage points.
+Source: \texttt{aff\_nil\_year.dta} (module 18).
+\end{minipage}
+\end{table}
+
+\end{document}
