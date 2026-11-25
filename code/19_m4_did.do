@@ -253,8 +253,8 @@ list zona ruolo e1 e2 e3 eany x_dlnR zona_descr, noobs sep(0) abbrev(12)
 export delimited zona ruolo cohort e1 e2 e3 eany matched x_lnR x_dlnR x_lnP sh_foreign sh_a65 sh_fam1 zona_descr ///
     using "$TAB/m4_groups`TAG'.csv", replace
 restore
-* pannello delle zone salvato per i controlli del modulo 19b (solo versione principale)
-if "`TAG'" == "" save "$WORK/m4_zone_panel.dta", replace
+* pannello delle zone salvato per i controlli del modulo 19b (con il suffisso della variante)
+save "$WORK/m4_zone_panel`TAG'.dta", replace
 
 *------------------------------------------------------------------------------*
 * 3. Stime per zona (semestri)
@@ -356,8 +356,8 @@ gen str24 ruolo = cond(missing(cohort), "escluso", cond(cohort == 0, cond(matche
 tab ruolo
 restore
 gen double t = year
-* pannello dei NIL salvato per i controlli del modulo 19b (solo versione principale)
-if "`TAG'" == "" save "$WORK/m4_nil_panel.dta", replace
+* pannello dei NIL salvato per i controlli del modulo 19b (con il suffisso della variante)
+save "$WORK/m4_nil_panel`TAG'.dta", replace
 local NP = max(199, floor($M4_PERMS/2))
 local NILY "r_ac r_in lnpop"
 if `has27' local NILY "r_ac r_in nm_c2029 nm_c3039 nm_c0009 sh_g2539 sh_hi sh_for27 sh_head35 lnpop"

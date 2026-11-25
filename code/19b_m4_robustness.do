@@ -174,6 +174,33 @@ global M4_RADIUS `R0'
 global M4_TREAT `T0'
 global M4_PERMS `P0'
 
+* potenza anche con raggio 500 m e 1.000 m (stessa procedura della sezione A)
+di as txt _n "  {ul:Potenza del test con raggio diverso}"
+frame m4pw: capture drop att_pct crit5_pct mde80_pct
+foreach v in "r500|500 m" "r1000|1.000 m" {
+    gettoken tag lab : v, parse("|")
+    local lab = substr("`lab'", 2, .)
+    capture confirm file "$WORK/m4_zone_panel_`tag'.dta"
+    if _rc continue
+    use "$WORK/m4_zone_panel_`tag'.dta", clear
+    m4power lnR, unit(zid) time(t) cohort(cohort) sample(s_match) step(0.5) tmax(2025.5) ///
+        perms($M4_PERMS) label("(1) affitti, controlli abbinati, raggio `lab'")
+    m4power lnP, unit(zid) time(t) cohort(cohort) sample(s_match) step(0.5) tmax(2025.5) ///
+        perms($M4_PERMS) label("(4) prezzi, controlli abbinati, raggio `lab'")
+    use "$WORK/m4_nil_panel_`tag'.dta", clear
+    m4power r_ac, unit(nil) time(t) cohort(cohort) sample(s_nilm) step(1) tmax(2024) ///
+        perms(`NP') label("(6) uscite, NIL abbinati, raggio `lab'")
+}
+frame m4pw {
+    capture drop att_pct crit5_pct mde80_pct
+    gen double att_pct   = 100*(exp(att) - 1)   if inlist(outcome, "lnR", "lnP")
+    gen double crit5_pct = 100*(exp(crit5) - 1) if inlist(outcome, "lnR", "lnP")
+    gen double mde80_pct = 100*(exp(mde80) - 1) if inlist(outcome, "lnR", "lnP")
+    format att_pct crit5_pct mde80_pct %6.1f
+    list spec outcome att crit5 mde80 mde80_pct nperm, noobs sep(0) abbrev(10)
+    export delimited using "$TAB/m4_power.csv", replace
+}
+
 * tabella riassuntiva: versione principale + varianti + senza un'area
 tempfile acc
 import delimited using "$TAB/m4_cs_results.csv", clear varnames(1) stringcols(1 2)
