@@ -3,6 +3,7 @@
 > Bozza per il paper (sezioni 1–2 ≈ 1.200 parole, formule escluse, tabelle e appendice escluse).
 > Ricostruita dai moduli 01–03c e 18 (sezioni 1–3) e dai file in `data/work`;
 > le statistiche della Tabella 2 sono state calcolate dai file `.dta` del repository.
+> Aggiornata il 25/11/2026 ai dati del commit f4d35f2 su `main` (correzione della zona C14: pannello bilanciato di 75 NIL).
 > Le note di verifica per il gruppo sono in fondo, in italiano.
 
 ---
@@ -17,7 +18,7 @@
 
 **Metro stations.** Dataset ds535 (municipal public-transport stops) gives the name, lines and coordinates of each metro station, 21 of them on line M4. Opening dates of the three M4 sections are added by hand (26 November 2022, 4 July 2023 and 12 October 2024).
 
-**Analytical sample.** The unit of observation is the NIL-year, on the 88 current NILs. We drop eight NILs with fewer than 500 residents in 2019 (parks, rail yards). Of the remaining 80, the main panel keeps the 74 NILs whose rent is observed in every year from 2004 to 2024. This balanced panel contains 1,332 NIL-years for the main index (2007–2024) and 1,554 for the gross-income control (2004–2024). Income is a single city-wide series. For 2004–2010, residents are set equal to their 2011 values.
+**Analytical sample.** The unit of observation is the NIL-year, on the 88 current NILs. We drop eight NILs with fewer than 500 residents in 2019 (parks, rail yards). Of the remaining 80, the main panel keeps the 75 NILs whose rent is observed in every year from 2004 to 2024. This balanced panel contains 1,350 NIL-years for the main index (2007–2024) and 1,575 for the gross-income control (2004–2024). Income is a single city-wide series. For 2004–2010, residents are set equal to their 2011 values.
 
 ## 2. Construction of the measures
 
@@ -32,7 +33,7 @@ where $R_{zs}$ is the OMI midpoint, $n^{k}_{iz}$ is the number of points of NIL 
 
 ### 2.2 OMI zoning changes
 
-Each semester is linked to the zoning in force at the time: the 2011 polygons up to 2013, the 2025 polygons with the zones split in 2024 recoded to their parents (D37+D38→D15, D39+D40→D30) for 2014S2–2024S1, and the 2025 polygons as published from 2024S2. The first semester of 2014 is a transition period, with half of the zones still carrying old codes, and is dropped. Across the 2013–2014 break, measured changes may partly reflect redrawn boundaries.
+Each semester is linked to the zoning in force at the time: the 2011 polygons up to 2013, the 2025 polygons with the zones split in 2024 recoded to their parents (D37+D38→D15, D39+D40→D30) for 2014S2–2024S1, and the 2025 polygons as published from 2024S2. The first semester of 2014 is a transition period, with half of the zones still carrying old codes, and is dropped. Across the 2013–2014 break, measured changes may partly reflect redrawn boundaries. Zone C14 (Porta Nuova), carved out of C12 but quoted only from 2018S2, takes the C12 rent until 2018S1 in the NIL series.
 
 ### 2.3 Median income from grouped data
 
@@ -88,40 +89,40 @@ $NM^{c}_{it}$ is the net change in cohort size. It nets out inflows against outf
 
 ## Table 2 — Descriptive statistics
 
-Balanced panel of 74 NILs. Unweighted statistics (each NIL-year counts once); no imputation; city-level income series have one observation per year. Computed from `aff_nil_year.dta`, `milano_income.dta`, `ds205_nil_year.dta`, `nil_composition_year.dta`.
+Balanced panel of 75 NILs. Unweighted statistics (each NIL-year counts once); no imputation; city-level income series have one observation per year. Computed (25/11/2026, data after commit f4d35f2) from `aff_nil_year.dta`, `milano_income.dta`, `ds205_nil_year.dta`, `nil_composition_year.dta`.
 
 | Variable | Unit | Years | N | Mean | SD | Median | Min | Max |
 |---|---|---|---|---|---|---|---|---|
-| OMI rent $R_{it}$ | EUR/m²/month | 2007–24 | 1,332 | 9.08 | 3.07 | 8.20 | 5.26 | 25.11 |
-| Affordability index $A_{it}$ (60 m², net) | % | 2007–24 | 1,332 | 36.99 | 11.95 | 33.96 | 22.14 | 94.79 |
-| Gross control $A^g_{it}$ | % | 2004–24 | 1,554 | 30.61 | 9.85 | 28.22 | 18.06 | 77.24 |
-| $D_{it}$: $A_{it}>40\%$ | % of NIL-years | 2007–24 | 1,332 | 26.95 | — | — | — | — |
-| $A^g_{it}>30\%$ | % of NIL-years | 2004–24 | 1,554 | 39.77 | — | — | — | — |
+| OMI rent $R_{it}$ | EUR/m²/month | 2007–24 | 1,350 | 9.15 | 3.12 | 8.23 | 5.26 | 25.11 |
+| Affordability index $A_{it}$ (60 m², net) | % | 2007–24 | 1,350 | 37.27 | 12.13 | 34.19 | 22.14 | 94.79 |
+| Gross control $A^g_{it}$ | % | 2004–24 | 1,575 | 30.83 | 9.97 | 28.31 | 18.06 | 77.24 |
+| $D_{it}$: $A_{it}>40\%$ | % of NIL-years | 2007–24 | 1,350 | 27.93 | — | — | — | — |
+| $A^g_{it}>30\%$ | % of NIL-years | 2004–24 | 1,575 | 40.57 | — | — | — | — |
 | Median gross income $Y^{med}_t$ | EUR | 2004–24 | 21 | 21,053 | 2,056 | 20,947 | 17,344 | 25,919 |
 | Median net income $Y^{net}_t$ | EUR | 2007–24 | 18 | 17,670 | 1,663 | 17,415 | 15,590 | 21,559 |
 | Taxpayers $N_t$ | persons | 2004–24 | 21 | 980,597 | 18,191 | 974,592 | 953,140 | 1,013,593 |
-| Residents $P_{it}$ | persons | 2012–24 | 962 | 18,037 | 12,018 | 16,679 | 367 | 63,073 |
-| Exits to other municipalities $r^{ac}_{it}$ | per 1,000 | 2012–24 | 962 | 23.97 | 12.36 | 21.52 | 8.57 | 172.68 |
-| All emigrants (DS205) $r^{emig}_{it}$ | per 1,000 | 2012–24 | 962 | 32.81 | 18.53 | 28.68 | 10.90 | 257.06 |
-| Net migration, age 0–9 $NM^{0-9}$ | per 1,000 | 2012–24 | 962 | 4.49 | 48.06 | 0.00 | −285.7 | 750.0 |
-| Net migration, age 20–29 $NM^{20-29}$ | per 1,000 | 2012–24 | 962 | 63.15 | 122.64 | 52.84 | −376.5 | 3,286.3 |
-| Net migration, age 30–39 $NM^{30-39}$ | per 1,000 | 2012–24 | 962 | 19.48 | 52.46 | 14.55 | −234.4 | 754.1 |
-| Net migration, age 40–64 $NM^{40-64}$ | per 1,000 | 2012–24 | 962 | −3.75 | 25.62 | −5.11 | −166.7 | 464.6 |
+| Residents $P_{it}$ | persons | 2012–24 | 975 | 17,871 | 12,022 | 16,608 | 367 | 63,073 |
+| Exits to other municipalities $r^{ac}_{it}$ | per 1,000 | 2012–24 | 975 | 23.98 | 12.29 | 21.54 | 8.57 | 172.68 |
+| All emigrants (DS205) $r^{emig}_{it}$ | per 1,000 | 2012–24 | 975 | 32.86 | 18.43 | 28.79 | 10.90 | 257.06 |
+| Net migration, age 0–9 $NM^{0-9}$ | per 1,000 | 2012–24 | 975 | 4.24 | 47.97 | 0.00 | −285.7 | 750.0 |
+| Net migration, age 20–29 $NM^{20-29}$ | per 1,000 | 2012–24 | 975 | 63.61 | 121.98 | 53.28 | −376.5 | 3,286.3 |
+| Net migration, age 30–39 $NM^{30-39}$ | per 1,000 | 2012–24 | 975 | 19.31 | 52.26 | 14.31 | −234.4 | 754.1 |
+| Net migration, age 40–64 $NM^{40-64}$ | per 1,000 | 2012–24 | 975 | −3.78 | 25.49 | −5.10 | −166.7 | 464.6 |
 
-*Population-weighted share of residents in NILs with $A_{it}>40\%$ (city summary, `aff_city_year.csv`): 45.4% (2007), 26.8% (2018), 42.9% (2024). Extreme values of $NM^c$ come from small cohorts in sparsely populated NILs.*
+*Population-weighted share of residents in NILs with $A_{it}>40\%$ (city summary, `aff_city_year.csv`): 45.6% (2007), 27.1% (2018), 43.2% (2024). Extreme values of $NM^c$ come from small cohorts in sparsely populated NILs.*
 
 ---
 
 ## Appendix A — OMI zoning changes and spatial harmonisation
 
-**Grid.** Points spaced 0.00035° in longitude and 0.00025° in latitude (≈27 × 28 m) over the extent of the 38 CAP polygons, giving 239,111 points (≈181 km²) inside the CAPs. Of these, 0.28% fall outside any NIL and 0.31% outside the 2025 OMI zones. A point on a shared boundary goes to the first polygon (164 points for the 2025 zones, 460 for the 2011 zones). Each point carries one NIL, one 2011 zone, one 2025 zone and its recoded 2014–2024 zone. The point × scheme structure is unique, so joining quotations to points (`joinby scheme z`) cannot duplicate observations. Coverage below 0.80 sets the rent to missing rather than rescaling it. This is why six NILs (9, 34, 35, 39, 40, 59) leave the balanced panel after 2014: zone C13 is quoted only in "excellent" condition, and some peripheral zones have no civil-dwelling quotation.
+**Grid.** Points spaced 0.00035° in longitude and 0.00025° in latitude (≈27 × 28 m) over the extent of the 38 CAP polygons, giving 239,111 points (≈181 km²) inside the CAPs. Of these, 0.28% fall outside any NIL and 0.31% outside the 2025 OMI zones. A point on a shared boundary goes to the first polygon (164 points for the 2025 zones, 460 for the 2011 zones). Each point carries one NIL, one 2011 zone, one 2025 zone and its recoded 2014–2024 zone. The point × scheme structure is unique, so joining quotations to points (`joinby scheme z`) cannot duplicate observations. Coverage below 0.80 sets the rent to missing rather than rescaling it. This is why five NILs (34, 35, 39, 40, 59) leave the balanced panel after 2014: zone C13 is quoted only in "excellent" condition, and some peripheral zones have no civil-dwelling quotation.
 
 | Period | Documented change (from the data) | Treatment in the project | Source of the information | Comparability |
 |---|---|---|---|---|
 | 2004S1–2013S2 | Same 55 zone codes every semester | 2011 S1 polygons applied to all years | ds1996 codes; `_expl_f205_2011_1.geojson` | Assumes boundaries constant 2004–2013 (unverified) |
 | 2014S1 | Transition: 38 quoted zones, of which about half with old codes (B02–B06, C01–C09, D01–D09) and no matching polygon | Semester dropped; 2014 = 2014S2 only | ds1996; module 18 | 2014 annual value based on one semester |
 | 2014S2 | New zoning: zones renumbered and redrawn (e.g. B15–B21, C15–C20, D30–D36, E5–E8); 40 zones in total, 38 quoted for civil/normal | 2025 S2 polygons with D37+D38→D15, D39+D40→D30 | ds1996; module 10a | Break between 2013 and 2014; no zone-to-zone correspondence imposed |
-| 2018S2 | C14 first quoted for civil dwellings in normal condition (39 zones) | Enters the weights when quoted | ds1996 | Coverage of affected NILs rises |
+| 2018S2 | C14 (carved out of C12) first quoted for civil dwellings in normal condition (39 zones) | NIL series: C12 rent assigned to the C14 area 2014S2–2018S1; zone-level series (M4): C14 missing before 2018S2 | ds1996; module 18 | Imputation assumes C14 rents equal to C12 (15.0 vs 15.6 EUR/m² in 2018S2) |
 | 2024S2 | D15 → D37 + D38; D30 → D39 + D40; Ortomercato moved from D15 to D16 (per module 10a); D39 quoted only in "excellent" condition | 2025 S2 polygons as published; 2024 = mean of S1 (old scheme) and S2 (new) | ds1996; module 10a header | Recoded D15 polygon for 2014–2024 omits the Ortomercato area |
 
 ---
@@ -166,3 +167,4 @@ Balanced panel of 74 NILs. Unweighted statistics (each NIL-year counts once); no
 10. **Picco delle cancellazioni d'ufficio 2013–2014.** È il 42–46% delle cancellazioni (`cancellazioni_motivo_anno.csv`) e coincide con la revisione anagrafica post-censimento; questa interpretazione va verificata. Pesa su `r_emig` e potenzialmente su $NM^c$, non su `r_ac`.
 11. **Linee guida del paper non trovate** nel repository: limite di parole e formato vanno controllati sul documento del corso. Il limite di 1.000–1.200 parole è applicato alle sezioni 1–2.
 12. **Intestazione del master non aggiornata.** Per il modulo 18b l'intestazione di `00_master.do` riporta "soglia del 30%", in contrasto con il codice; da correggere in documentazione.
+13. **Zona C14 (commit f4d35f2 su `main`).** Prima del 2018S2, nei NIL, all'area della C14 si attribuisce l'affitto della C12, da cui la C14 è stata ricavata. Nel 2018S2 i valori sono 15,0 € (C14) e 15,6 € (C12) al m²; per la C12 sono 15,2 € nel 2018S1. Così il NIL 9 (Porta Garibaldi) entra nel pannello bilanciato, che passa da 74 a 75 NIL, e sparisce il salto artificiale a Isola nel 2018S2. Le quote di residenti oltre soglia passano a 45,6% (2007), 27,1% (2018) e 43,2% (2024), contro i precedenti 45,4%, 26,8% e 42,9%: vanno aggiornate ovunque nel paper e nel documento del gruppo. È un'imputazione: se affitti di C14 e C12 differivano prima del 2018, l'errore ricade sui NIL 9 e Isola. A livello di zona (modulo 19) la C14 resta senza dati prima del 2018S2.
