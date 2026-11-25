@@ -1,6 +1,6 @@
 # Data and construction of the measures
 
-> Bozza per il paper (sezioni 1–2 ≈ 1.180 parole, formule escluse, tabelle e appendice escluse).
+> Bozza per il paper (sezioni 1–2 ≈ 1.200 parole, formule escluse, tabelle e appendice escluse).
 > Ricostruita dai moduli 01–03c e 18 (sezioni 1–3) e dai file in `data/work`;
 > le statistiche della Tabella 2 sono state calcolate dai file `.dta` del repository.
 > Le note di verifica per il gruppo sono in fondo, in italiano.
@@ -9,13 +9,13 @@
 
 ## 1. Data
 
-**Rents.** Housing costs are measured with the quotations of the *Osservatorio del Mercato Immobiliare* (OMI) of the Italian Revenue Agency, distributed by the Comune di Milano open-data portal (dataset ds1996, first semester 2004 to second semester 2025). For each OMI zone, semester, property type and state of repair, OMI publishes a minimum and a maximum rent (EUR per m² of gross floor area per month) and sale value (EUR per m²). These ranges are estimates of normal market values in the zone; they are neither averages of registered contracts nor transaction prices. We keep "civil dwellings" (type 20) in "normal" condition, one quotation per zone and semester, and use the midpoint of the range. The number of quoted zones falls from 55 (2004–2013) to 38 (from 2014; 39 from 2018) and rises to 40 after the 2024 revision (Appendix A).
+**Rents.** Housing costs are measured with the quotations of the *Osservatorio del Mercato Immobiliare* (OMI) of the Italian Revenue Agency, distributed by the Comune di Milano open-data portal (dataset ds1996, first semester 2004 to second semester 2025). For each homogeneous zone, property type and state of repair, OMI publishes a minimum–maximum interval of market and rental values per m² (Agenzia delle Entrate, n.d.); in ds1996 rents are in EUR per m² of gross floor area per month and sale values in EUR per m². These intervals describe normal market values in the zone; they are neither averages of registered contracts nor transaction prices. We keep "civil dwellings" (type 20) in "normal" condition, one quotation per zone and semester, and use the midpoint of the range. The number of quoted zones falls from 55 (2004–2013) to 38 (from 2014; 39 from 2018) and rises to 40 after the 2024 revision (Appendix A).
 
 **Income.** Dataset ds531 reports, for the whole municipality, the number of taxpayers (*persone fisiche*) and the amount of *reddito complessivo* in eight income classes, for tax years 2008–2024. Tax years 2004–2007 come from the municipal files of the Ministry of Economy and Finance (MEF), which use the same classes. *Reddito complessivo* is an individual taxpayer's total income before deductions and taxes. It is not household income, and it is not available below the city level. Tax year *t* (income earned in *t*, declared in *t*+1) is matched to rents of calendar year *t*. Postcode-level MEF data (module 01) are used only in CAP-level analyses.
 
 **Population and moves.** DS205 provides residents, births, deaths, emigrants and immigrants for each *Nucleo di Identità Locale* (NIL) and year, 2011–2024. Four further datasets split registry cancellations and registrations into three reasons for 2004–2024: another Italian municipality, abroad, and "other" (administrative removals such as untraceable residents). Dataset ds27 gives residents by NIL and single year of age for 1999–2025. DS205 and ds27 are stocks; the movement data are flows, which never record moves between NILs.
 
-**Metro stations.** Dataset ds535 (municipal public-transport stops) gives the name, lines and coordinates of each metro station, 21 of them on line M4. Opening dates are not part of the dataset: they are entered by hand from the group's documentation for the three M4 sections (26 November 2022, 4 July 2023 and 12 October 2024).
+**Metro stations.** Dataset ds535 (municipal public-transport stops) gives the name, lines and coordinates of each metro station, 21 of them on line M4. Opening dates of the three M4 sections are added by hand (26 November 2022, 4 July 2023 and 12 October 2024).
 
 **Analytical sample.** The unit of observation is the NIL-year, on the 88 current NILs. We drop eight NILs with fewer than 500 residents in 2019 (parks, rail yards). Of the remaining 80, the main panel keeps the 74 NILs whose rent is observed in every year from 2004 to 2024. This balanced panel contains 1,332 NIL-years for the main index (2007–2024) and 1,554 for the gross-income control (2004–2024). Income is a single city-wide series. For 2004–2010, residents are set equal to their 2011 values.
 
@@ -28,11 +28,11 @@ OMI zones and NILs do not nest. We therefore overlay a regular grid of points (a
 $$R_{is}=\frac{\sum_{z\in Q_s} n^{k(s)}_{iz}\,R_{zs}}{\sum_{z\in Q_s} n^{k(s)}_{iz}},\qquad 
 c_{is}=\frac{\sum_{z\in Q_s} n^{k(s)}_{iz}}{N_i},$$
 
-where $R_{zs}$ is the OMI midpoint, $n^{k}_{iz}$ is the number of points of NIL *i* in zone *z*, $Q_s$ is the set of zones quoted in *s*, and $N_i$ is the total number of points in the NIL. $R_{is}$ is set to missing when coverage $c_{is}<0.80$. The annual rent $R_{it}$ is the mean of the available semesters. Rents are intensive (EUR/m²): the weights average them and never allocate totals. The underlying assumption is that the quotation is uniform within a zone and that every part of the NIL counts in proportion to its area, so parks and rail yards weigh as much as residential blocks. NIL rents are therefore estimates, not direct observations.
+where $R_{zs}$ is the OMI midpoint, $n^{k}_{iz}$ is the number of points of NIL *i* in zone *z*, $Q_s$ is the set of zones quoted in *s*, and $N_i$ is the total number of points in the NIL. $R_{is}$ is set to missing when coverage $c_{is}<0.80$. The annual rent $R_{it}$ is the mean of the available semesters. Rents are intensive (EUR/m²): the weights average them and never allocate totals. The underlying assumption is that the quotation is uniform within a zone and that every part of the NIL counts in proportion to its area, so parks and rail yards weigh as much as residential blocks. NIL rents are thus estimates.
 
 ### 2.2 OMI zoning changes
 
-Each semester is linked to the zoning in force at the time: the 2011 polygons up to 2013, the 2025 polygons with the zones split in 2024 recoded to their parents (D37+D38→D15, D39+D40→D30) for 2014S2–2024S1, and the 2025 polygons as published from 2024S2. The first semester of 2014 is a transition period, with half of the zones still carrying old codes, and is dropped. Levels are therefore comparable within each zoning period. Across the 2013–2014 break, part of a measured change may reflect the redrawing of zone boundaries.
+Each semester is linked to the zoning in force at the time: the 2011 polygons up to 2013, the 2025 polygons with the zones split in 2024 recoded to their parents (D37+D38→D15, D39+D40→D30) for 2014S2–2024S1, and the 2025 polygons as published from 2024S2. The first semester of 2014 is a transition period, with half of the zones still carrying old codes, and is dropped. Across the 2013–2014 break, measured changes may partly reflect redrawn boundaries.
 
 ### 2.3 Median income from grouped data
 
@@ -40,7 +40,7 @@ Let classes $j=1,\dots,J$ have bounds $[L_j,U_j)$ and frequencies $f_j$. Let $N_
 
 $$Y^{med}_t = L_m+\frac{N_t/2-F_{m-1}}{f_m}\,(U_m-L_m).$$
 
-In every year the median lies in the EUR 15,000–26,000 class, so the open top class never matters. The distribution is city-wide, so no territorial medians are averaged. $Y^{med}_t$ is an interpolated estimate for the median taxpayer, not a microdata median. Net income replaces the class bounds with their after-tax values, $g_t(L_m)$ and $g_t(U_m)$. The function $g_t$ applies the national income tax (IRPEF), employee tax credits, the regional and municipal surcharges and the payroll bonuses in force in year *t* (scenario "employee"; alternatives in module 18b):
+The median always lies in the EUR 15,000–26,000 class, so the open top class never matters. The distribution is city-wide, so no territorial medians are averaged. $Y^{med}_t$ is an interpolated estimate for the median taxpayer, not a microdata median. Net income replaces the class bounds with their after-tax values, $g_t(L_m)$ and $g_t(U_m)$. The function $g_t$ applies the national income tax (IRPEF), employee tax credits, the regional and municipal surcharges and the payroll bonuses in force in year *t* (scenario "employee"; alternatives in module 18b):
 
 $$Y^{net}_t = g_t(L_m)+\frac{N_t/2-F_{m-1}}{f_m}\,[g_t(U_m)-g_t(L_m)].$$
 
@@ -50,7 +50,7 @@ The main index is the annual rent of a standard 60 m² dwelling in NIL *i* divid
 
 $$A_{it}=\frac{12\cdot 60\cdot R_{it}}{Y^{net}_t},\qquad D_{it}=\mathbf 1[A_{it}>0.40].$$
 
-$A_{it}$ is a ratio, reported in percent, and a higher value means lower affordability. Because the denominator is common to all NILs, cross-sectional variation in $A_{it}$ comes only from rents. The 40% cut-off follows the OECD/Eurostat housing-cost-overburden convention. That convention, however, refers to a household's actual housing costs as a share of its disposable income, whereas $A_{it}$ compares a standardised market rent with one individual's estimated net income. A gross-income control applies the "30% rule" used by the US Department of Housing and Urban Development (HUD), $A^{g}_{it}=12\cdot60\cdot R_{it}/Y^{med}_t$ with threshold 0.30, from 2004 onwards. Variants use 40 m² with one income and 60 m² with two incomes. The headline statistic is the share of residents living in NILs above the threshold, $\sum_i P_{it}D_{it}/\sum_i P_{it}$, computed on the balanced panel. It says whether a median earner could rent a standard flat at normal market rates in the neighbourhood where people live. It does not measure the share of households actually overburdened. Sale values are carried to NILs with the same weights for module 19, but they are not used to build a price-to-income ratio, and no threshold is applied to them.
+$A_{it}$ is a ratio, reported in percent; a higher value means lower affordability. The denominator is the same for every NIL, so $A_{it}$ measures how much of the typical Milanese taxpayer's net income a standard rental in each NIL would absorb, and its variation across NILs comes only from rents. The 40% threshold is the OECD housing cost overburden standard: the share of households spending "more than 40% of their disposable income on housing costs (in line with Eurostat methodology)", where indicator HC1.2.3 uses the narrow definition of rent and mortgage costs (OECD, 2024; Eurostat, n.d.). Our numerator, rent only, matches that narrow definition and our denominator is after tax, but two adaptations remain. The OECD ratio uses each household's actual costs and equivalised household disposable income; $A_{it}$ uses a standardised market rent and one individual's estimated net income. A gross-income version, $A^{g}_{it}=12\cdot60\cdot R_{it}/Y^{med}_t$ with the 30% rule of thumb, is kept only as a robustness check from 2004. The headline statistic is the share of residents living in NILs above the threshold, $\sum_i P_{it}D_{it}/\sum_i P_{it}$, on the balanced panel. It says where a median earner could rent a standard flat at normal market rates, not how many households are actually overburdened. Sale values enter no price-to-income ratio and no threshold.
 
 ### 2.5 Exits and net migration by age
 
@@ -59,6 +59,15 @@ Out-migration is $r^{ac}_{it}=1000\cdot C^{ac}_{it}/P_{i,t-1}$, where $C^{ac}$ c
 $$NM^{c}_{it}=1000\cdot\frac{\sum_{a\in c}P_{i,a+1,t}-\sum_{a\in c}P_{i,a,t-1}}{\sum_{a\in c}P_{i,a,t-1}},\quad c\in\{0\text{–}9,\,20\text{–}29,\,30\text{–}39,\,40\text{–}64\}.$$
 
 $NM^{c}_{it}$ is the net change in cohort size. It nets out inflows against outflows, including moves between NILs. Births do not enter it, but it also absorbs deaths, which are small below age 65, and registry corrections. It is therefore net migration only in an approximate sense. A balance near zero may hide large gross flows. Neither measure separates voluntary mobility from involuntary displacement.
+
+---
+
+### References (verified 25 November 2026)
+
+- Agenzia delle Entrate (n.d.). *Quotazioni immobiliari*, Osservatorio del Mercato Immobiliare. https://www.agenziaentrate.gov.it/portale/web/guest/schede/fabbricatiterreni/omi/banche-dati/quotazioni-immobiliari
+- Eurostat (n.d.). *Glossary: Housing cost overburden rate*. Statistics Explained. https://ec.europa.eu/eurostat/statistics-explained/index.php?title=Glossary:Housing_cost_overburden_rate
+- OECD (2024). *HC1.2 Housing costs over income*. OECD Affordable Housing Database, last updated 15/04/2024. https://www.oecd.org/content/dam/oecd/en/data/datasets/affordable-housing-database/hc1-2-housing-costs-over-income.pdf
+- Comune di Milano, Open Data portal: datasets ds1996, ds531, DS205, ds1596, ds1600, ds1954, ds1956, ds27, ds535, DS964 (file names in `data/raw` and `data/geo`).
 
 ---
 
@@ -145,8 +154,8 @@ Balanced panel of 74 NILs. Unweighted statistics (each NIL-year counts once); no
 
 ## Note di verifica per il gruppo
 
-1. **Soglia: la consegna dice 30%, il codice usa il 40%.** In `18_affordability_milano.do` l'indice principale è `A60` con soglia 0,40 sul reddito netto (OCSE). Il 30% si applica al lordo (`A60g`) ed è solo un controllo. Il testo descrive la procedura implementata. Se il gruppo vuole il 30% come soglia principale, è una scelta da prendere prima di guardare i risultati e va rieseguito il modulo 18.
-2. **Fonti delle soglie citate a memoria.** OECD Affordable Housing Database, indicatore HC1.2 (40% del reddito disponibile, rent + mortgage); Eurostat, *housing cost overburden rate*; HUD, regola del 30% del reddito lordo. Da questa sessione i siti oecd.org, huduser.gov ed ec.europa.eu non sono raggiungibili: verificate testo esatto e codici (HC1.2.3) prima di metterli in bibliografia. Vale lo stesso per la descrizione dei valori OMI come "valori normali di mercato" (manuale OMI dell'Agenzia delle Entrate).
+1. **Soglia e reddito: confermati.** Il gruppo ha deciso: reddito netto mediano di tutta Milano e soglia del 40% (standard OCSE). Corrisponde a quanto già implementato in `18_affordability_milano.do` (`A60`, `off_A60`), quindi non c'è niente da rieseguire. Il 30% sul lordo (`A60g`) resta nel codice solo come controllo di robustezza: se preferite toglierlo anche dal testo basta eliminare una frase della 2.4.
+2. **Fonti verificate il 25/11/2026.** OCSE HC1.2 (PDF aggiornato al 15/04/2024: soglia 40% del reddito disponibile, HC1.2.3 = definizione ristretta affitto + mutuo, reddito equivalente delle famiglie), glossario Eurostat (costi abitativi totali, al netto dei sussidi per la casa) e pagina OMI dell'Agenzia delle Entrate (intervallo minimo/massimo per tipologia e stato di conservazione). Il sito HUD rifiuta le richieste automatiche (errore 403): per questo nel testo la soglia del 30% è chiamata *rule of thumb*, senza citare HUD. Se volete citarlo, aggiungete il riferimento a mano dopo averlo controllato.
 3. **Possibile errore nel netto 2022–2023** (`netinc_program.do`, ereditato da 18 e 18b). Dal 2022 il trattamento integrativo di 1.200 € vale fino a 15.000 € e poi va a zero di colpo. Il netto al confine 15.000 include quindi il bonus, mentre appena sopra il confine non c'è: l'ipotesi "il netto cresce con il lordo" è violata. Con l'interpolazione la mediana netta risulta sovrastimata di circa 284 € nel 2022, 139 € nel 2023 e 9 € nel 2024 (calcolo mio da `milano_income_classes.dta`, assumendo il salto a 15.000), quindi `A60` è leggermente sottostimato. Correzione proposta: usare il limite destro, cioè il netto a 15.000,01. Va rieseguito in Stata (18, 18b e moduli a valle). Inoltre il programma applica l'imposta al reddito complessivo, senza oneri deducibili.
 4. **Popolazione di ds531.** Nel 2019 ds531 conta 990.224 contribuenti, mentre i file MEF per CAP (modulo 01) ne contano 1.018.249 (circa il 2,8% in più). Bisogna verificare nei metadati di ds531 se "Anno" è l'anno d'imposta (l'andamento lo suggerisce) e quale popolazione è coperta.
 5. **Confini OMI 2004–2013 non verificati.** I 55 codici sono identici in ogni semestre, ma per tutti gli anni si usano i poligoni del 1° semestre 2011. Se i confini sono cambiati prima del 2011, i valori 2004–2010 per NIL sono imprecisi.
