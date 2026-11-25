@@ -150,6 +150,8 @@ forvalues p = 1/3 {
     gen byte e`p' = d`p' <= `r' & doth > `r'
 }
 gen byte eany = d4 <= `r'
+* servito di nuovo da una qualsiasi stazione M4 (intensita' del trattamento, modulo 19d)
+gen byte enew = d4 <= `r' & doth > `r'
 tempfile pts
 save `pts'
 

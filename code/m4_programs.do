@@ -123,7 +123,7 @@ end
 capture program drop m4groups
 program define m4groups
     args unitvar t1 t2 t3
-    collapse (mean) e1 e2 e3 eany (count) npts = pid, by(`unitvar')
+    collapse (mean) e1 e2 e3 eany enew (count) npts = pid, by(`unitvar')
     gen double cohort = .
     replace cohort = `t3' if e3 >= $M4_TREAT
     replace cohort = `t2' if e2 >= $M4_TREAT

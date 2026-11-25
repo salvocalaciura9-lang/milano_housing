@@ -201,6 +201,7 @@ do "$CODE/20_nil_typology.do"        // tipologia dei NIL per composizione dei r
 do "$CODE/19_m4_did.do"              // differenza nelle differenze: apertura della M4 (usa 03c e 20)
 do "$CODE/19b_m4_robustness.do"      // M4: potenza del test, senza un'area trattata, raggio e soglia
 do "$CODE/19c_m4_cantieri.do"        // M4: anticipazione, trattamento dall'inizio dei cantieri (NIL)
+do "$CODE/19d_m4_dose.do"            // M4: esposizione continua (quota dell'area servita di nuovo)
 
 di as txt _n "Fine: `c(current_date)' `c(current_time)'"
 di as txt "Moduli eseguiti con:  indice=" $IX_OK "  CPI=" $CPI_OK "  shapefile NIL=" $SHP_OK ///
