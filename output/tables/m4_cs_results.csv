@@ -1,26 +1,26 @@
 spec,outcome,att,p_perm,pre,p_perm_pre,nT,nC
-"(0) TWFE classico, tutte le mai esposte (solo confronto)",lnR,-.1008921888744502,,,,,
-(1) PRINCIPALE: controlli abbinati + non ancora trattate,lnR,-.0477118738919471,.473,.0072096846638861,.897,3,6
-(2) tutte le zone mai esposte + non ancora trattate,lnR,-.0574131180572558,.274,.0178767807240422,.714,3,16
-(3) solo non ancora trattate (zone delle tratte successive),lnR,-.048069994971614,.638,.1074547846301142,.638,3,0
-"(4) prezzi di compravendita, controlli abbinati",lnP,-.0254326800049554,.494,-.0440095818527955,.31,3,6
-(5) NIL: mai esposti + non ancora trattati,r_ac,-3.231251404745089,.064,-.3814980962197039,.8,12,57
-(6) NIL: abbinati per composizione + non ancora trattati,r_ac,-3.507259457032195,.01,-1.182639630570743,.244,12,21
-(5) NIL: mai esposti + non ancora trattati,r_in,15.82010327078911,.102,11.83693424699048,.118,12,57
-(6) NIL: abbinati per composizione + non ancora trattati,r_in,16.28065011166114,.122,10.85646564044917,.278,12,21
-(5) NIL: mai esposti + non ancora trattati,nm_c2029,5.470157942424603,.742,37.92859168437484,.088,12,57
-(6) NIL: abbinati per composizione + non ancora trattati,nm_c2029,7.880341252200353,.482,33.89584675500141,.168,12,21
-(5) NIL: mai esposti + non ancora trattati,nm_c3039,-3.867536207177289,.794,8.841611015904519,.41,12,57
-(6) NIL: abbinati per composizione + non ancora trattati,nm_c3039,-10.29794606044991,.504,4.260953965692032,.458,12,21
-(5) NIL: mai esposti + non ancora trattati,nm_c0009,-23.54971668773111,.228,-8.829268004990276,.404,12,57
-(6) NIL: abbinati per composizione + non ancora trattati,nm_c0009,-26.22801756368316,.118,-8.129680748937378,.37,12,21
-(5) NIL: mai esposti + non ancora trattati,sh_g2539,-.0014324563322564,.606,-.0113342945158472,.022,12,57
-(6) NIL: abbinati per composizione + non ancora trattati,sh_g2539,-.0018054414307691,.55,-.0122605293225307,.01,12,21
-(5) NIL: mai esposti + non ancora trattati,sh_hi,.000315819112848,.718,-.0007095885590287,.366,12,57
-(6) NIL: abbinati per composizione + non ancora trattati,sh_hi,-.0003297225586949,.6860000000000001,.0005765915758966,.54,12,21
-(5) NIL: mai esposti + non ancora trattati,sh_for27,.0020498154545801,.694,-.0008081180582743,.908,12,57
-(6) NIL: abbinati per composizione + non ancora trattati,sh_for27,.0033428614174561,.382,-.0061769121640559,.27,12,21
-(5) NIL: mai esposti + non ancora trattati,sh_head35,-.0000375439988009,1,-.005645241241227,.31,12,57
-(6) NIL: abbinati per composizione + non ancora trattati,sh_head35,-.0007824717968251,.8100000000000001,-.0054543182157456,.264,12,21
-(5) NIL: mai esposti + non ancora trattati,lnpop,.0099346617119214,.344,.0025311248299146,.896,12,57
-(6) NIL: abbinati per composizione + non ancora trattati,lnpop,.0155328857242116,.116,-.0174240339639671,.094,12,21
+"(0) TWFE classico, tutte le mai esposte (solo confronto)",lnR,-.1142992931313754,,,,,
+(1) PRINCIPALE: controlli abbinati + non ancora trattate,lnR,-.0352272839200363,.23,.0282391496538498,.57,5,6
+(2) tutte le zone mai esposte + non ancora trattate,lnR,-.0307658210209007,.396,.0518720721584184,.204,5,20
+(3) solo non ancora trattate (zone delle tratte successive),lnR,.0314230068376669,.5620000000000001,-.0451348521616314,.595,5,0
+"(4) prezzi di compravendita, controlli abbinati",lnP,-.0248265363452594,.378,-.009952741595302,.825,5,6
+(5) NIL: mai esposti + non ancora trattati,r_ac,-2.034043605834587,.27,-.2603675453622184,.83,8,60
+(6) NIL: abbinati per composizione + non ancora trattati,r_ac,-2.387738159068092,.062,-1.185016200588259,.128,8,14
+(5) NIL: mai esposti + non ancora trattati,r_in,-1.760376166082468,.616,-1.038672309731882,.708,8,60
+(6) NIL: abbinati per composizione + non ancora trattati,r_in,.1002061674169186,.962,-2.1701094785306,.288,8,14
+(5) NIL: mai esposti + non ancora trattati,nm_c2029,-7.148395403715732,.6879999999999999,-6.013268091589561,.6820000000000001,8,60
+(6) NIL: abbinati per composizione + non ancora trattati,nm_c2029,1.108887501450692,.924,-10.31100250591645,.242,8,14
+(5) NIL: mai esposti + non ancora trattati,nm_c3039,12.08429933067528,.454,7.848058069971158,.526,8,60
+(6) NIL: abbinati per composizione + non ancora trattati,nm_c3039,12.88872061974322,.372,.5395500597805282,.926,8,14
+(5) NIL: mai esposti + non ancora trattati,nm_c0009,-8.145409678869022,.64,-.9777709597809823,.926,8,60
+(6) NIL: abbinati per composizione + non ancora trattati,nm_c0009,-7.622310276899957,.656,-3.237943401228173,.638,8,14
+(5) NIL: mai esposti + non ancora trattati,sh_g2539,.0004982838504767,.894,-.002135938096939,.5659999999999999,8,60
+(6) NIL: abbinati per composizione + non ancora trattati,sh_g2539,.001398463221538,.678,-.0020695226190506,.404,8,14
+(5) NIL: mai esposti + non ancora trattati,sh_hi,.0004471386514764,.736,-.0014701977732323,.182,8,60
+(6) NIL: abbinati per composizione + non ancora trattati,sh_hi,-.0005345204042999,.712,.0003330568838291,.846,8,14
+(5) NIL: mai esposti + non ancora trattati,sh_for27,-.00035785483517,.944,.0027760940370023,.74,8,60
+(6) NIL: abbinati per composizione + non ancora trattati,sh_for27,.0004102586250696,.924,-.0018192829892242,.724,8,14
+(5) NIL: mai esposti + non ancora trattati,sh_head35,.002005434813055,.724,-.002755026684926,.626,8,60
+(6) NIL: abbinati per composizione + non ancora trattati,sh_head35,.0031782780886304,.542,-.0031066359016431,.544,8,14
+(5) NIL: mai esposti + non ancora trattati,lnpop,-.0059110444718299,.54,.0221778222059005,.246,8,60
+(6) NIL: abbinati per composizione + non ancora trattati,lnpop,.0022491546802371,.748,.003453268775246,.626,8,14

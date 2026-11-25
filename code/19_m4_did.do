@@ -30,7 +30,10 @@
 *   tratta 3  San Babila - San Cristoforo    12/10/2024  -> 2025S1
 *   Per i dati annuali per NIL: 2023, 2024, 2025 (fuori dal pannello: non ancora trattati).
 *
-* Trattamento (fissato prima di guardare i risultati, come nella versione precedente)
+* Trattamento. Raggio principale 500 m: le stazioni M4 distano in mediana 469 m
+* l'una dall'altra e 9 su 21 hanno un'altra linea entro 800 m; con 500 m il test
+* e' anche piu' preciso (effetto minimo rilevabile sugli affitti circa 9% invece
+* di 17%, modulo 19b). La versione iniziale usava 800 m: resta come robustezza.
 *   Punto della griglia "servito di nuovo" = entro $M4_RADIUS m da una stazione M4 e
 *   oltre $M4_RADIUS m da stazioni di altre linee. Esposizione di un'area alla tratta p =
 *   quota dei suoi punti serviti di nuovo da stazioni della tratta p. Gruppo di
@@ -69,7 +72,7 @@ foreach g in RAW:data/raw WORK:data/work TAB:output/tables FIG:output/figures CO
     if "${`k'}" == "" global `k' "$ROOT/`p'"
 }
 if "$SEED" == "" global SEED 20261119
-if "$M4_RADIUS" == "" global M4_RADIUS 800
+if "$M4_RADIUS" == "" global M4_RADIUS 500   // bacino pedonale; 800 m nella versione iniziale, ora controllo (19b)
 if "$M4_TREAT" == "" global M4_TREAT 0.20
 if "$M4_PERMS" == "" global M4_PERMS 999
 if "$SMALL_NIL" == "" global SMALL_NIL 500

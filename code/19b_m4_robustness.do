@@ -13,7 +13,7 @@
 *    il rumore della stima e' quello delle permutazioni.
 * B. Togliere un'area trattata alla volta (zone per gli affitti, NIL per le uscite):
 *    il risultato non deve dipendere da una sola area.
-* C. Definizione del trattamento: raggio di 500 e 1.000 m (invece di 800) e soglia
+* C. Definizione del trattamento: raggio di 800 e 1.000 m (invece di 500) e soglia
 *    di esposizione del 10% e del 30% (invece del 20%). Si rilancia il modulo 19 in
 *    versione ridotta (affitti, prezzi, uscite) con questi parametri.
 *
@@ -30,7 +30,7 @@ foreach g in RAW:data/raw WORK:data/work TAB:output/tables FIG:output/figures CO
     if "${`k'}" == "" global `k' "$ROOT/`p'"
 }
 if "$SEED" == "" global SEED 20261119
-if "$M4_RADIUS" == "" global M4_RADIUS 800
+if "$M4_RADIUS" == "" global M4_RADIUS 500   // bacino pedonale; 800 m nella versione iniziale, ora controllo (19b)
 if "$M4_TREAT" == "" global M4_TREAT 0.20
 if "$M4_PERMS" == "" global M4_PERMS 999
 foreach f in "$WORK/m4_zone_panel.dta" "$WORK/m4_nil_panel.dta" {
@@ -160,7 +160,7 @@ local T0 $M4_TREAT
 local P0 $M4_PERMS
 global M4_LIGHT 1
 global M4_PERMS 499
-foreach v in "r500 500 0.20" "r1000 1000 0.20" "t10 800 0.10" "t30 800 0.30" {
+foreach v in "r800 800 0.20" "r1000 1000 0.20" "t10 500 0.10" "t30 500 0.30" {
     tokenize `v'
     global M4_TAG `1'
     global M4_RADIUS `2'
@@ -174,10 +174,10 @@ global M4_RADIUS `R0'
 global M4_TREAT `T0'
 global M4_PERMS `P0'
 
-* potenza anche con raggio 500 m e 1.000 m (stessa procedura della sezione A)
+* potenza anche con raggio 800 m e 1.000 m (stessa procedura della sezione A)
 di as txt _n "  {ul:Potenza del test con raggio diverso}"
 frame m4pw: capture drop att_pct crit5_pct mde80_pct
-foreach v in "r500|500 m" "r1000|1.000 m" {
+foreach v in "r800|800 m" "r1000|1.000 m" {
     gettoken tag lab : v, parse("|")
     local lab = substr("`lab'", 2, .)
     capture confirm file "$WORK/m4_zone_panel_`tag'.dta"
@@ -205,9 +205,9 @@ frame m4pw {
 tempfile acc
 import delimited using "$TAB/m4_cs_results.csv", clear varnames(1) stringcols(1 2)
 keep if regexm(spec, "^\((1|2|4|5|6)\)") & inlist(outcome, "lnR", "lnP", "r_ac")
-gen str40 variante = "principale (800 m, 20%)"
+gen str40 variante = "principale (500 m, 20%)"
 save `acc'
-foreach v in "r500|raggio 500 m" "r1000|raggio 1.000 m" "t10|soglia 10%" "t30|soglia 30%" {
+foreach v in "r800|raggio 800 m" "r1000|raggio 1.000 m" "t10|soglia 10%" "t30|soglia 30%" {
     gettoken tag lab : v, parse("|")
     local lab = substr("`lab'", 2, .)
     capture confirm file "$TAB/m4_cs_results_`tag'.csv"

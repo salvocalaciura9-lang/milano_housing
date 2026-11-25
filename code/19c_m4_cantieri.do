@@ -41,7 +41,7 @@ foreach g in RAW:data/raw WORK:data/work TAB:output/tables FIG:output/figures CO
     if "${`k'}" == "" global `k' "$ROOT/`p'"
 }
 if "$SEED" == "" global SEED 20261119
-if "$M4_RADIUS" == "" global M4_RADIUS 800
+if "$M4_RADIUS" == "" global M4_RADIUS 500   // bacino pedonale; 800 m nella versione iniziale, ora controllo (19b)
 if "$M4_TREAT" == "" global M4_TREAT 0.20
 if "$M4_PERMS" == "" global M4_PERMS 999
 capture confirm file "$WORK/m4_nil_panel.dta"

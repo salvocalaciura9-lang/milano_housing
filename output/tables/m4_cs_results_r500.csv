@@ -1,7 +1,0 @@
-spec,outcome,att,p_perm,pre,p_perm_pre,nT,nC
-"(0) TWFE classico, tutte le mai esposte (solo confronto)",lnR,-.1142992931313754,,,,,
-(1) PRINCIPALE: controlli abbinati + non ancora trattate,lnR,-.0352272839200363,.194,.0282391496538498,.514,5,6
-(2) tutte le zone mai esposte + non ancora trattate,lnR,-.0307658210209007,.372,.0518720721584184,.22,5,20
-"(4) prezzi di compravendita, controlli abbinati",lnP,-.0248265363452594,.388,-.009952741595302,.822,5,6
-(5) NIL: mai esposti + non ancora trattati,r_ac,-2.034043605834587,.284,-.2603675453622182,.852,8,60
-(6) NIL: abbinati per composizione + non ancora trattati,r_ac,-2.387738159068092,.056,-1.185016200588258,.12,8,14
