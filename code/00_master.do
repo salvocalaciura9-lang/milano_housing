@@ -199,6 +199,8 @@ do "$CODE/18_affordability_milano.do" // affordability sul reddito netto mediano
 do "$CODE/18b_income_net.do"          // reddito netto mediano (scenari di detrazione) e soglia OCSE del 40% sul netto
 do "$CODE/20_nil_typology.do"        // tipologia dei NIL per composizione dei residenti (2014)
 do "$CODE/19_m4_did.do"              // differenza nelle differenze: apertura della M4 (usa 03c e 20)
+do "$CODE/19b_m4_robustness.do"      // M4: potenza del test, senza un'area trattata, raggio e soglia
+do "$CODE/19c_m4_cantieri.do"        // M4: anticipazione, trattamento dall'inizio dei cantieri (NIL)
 
 di as txt _n "Fine: `c(current_date)' `c(current_time)'"
 di as txt "Moduli eseguiti con:  indice=" $IX_OK "  CPI=" $CPI_OK "  shapefile NIL=" $SHP_OK ///

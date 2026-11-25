@@ -1,0 +1,34 @@
+variante,spec,outcome,att,att_pct,p_perm,pre,p_perm_pre,nt,nc
+"principale (800 m, 20%)","(4) prezzi di compravendita, controlli abbinati",lnP,-.02543268,-2.511199358986549,.49399999,-.044009581,.31,3,6
+raggio 1.000 m,"(4) prezzi di compravendita, controlli abbinati",lnP,-.041129053,-4.029473054198373,.352,-.037469622,.33199999,4,8
+raggio 500 m,"(4) prezzi di compravendita, controlli abbinati",lnP,-.024826536,-2.452089209499164,.38800001,-.0099527417,.82200003,5,6
+soglia 10%,"(4) prezzi di compravendita, controlli abbinati",lnP,-.031038994,-3.05622298879108,.23800001,.0016271521,.95599997,8,10
+soglia 30%,"(4) prezzi di compravendita, controlli abbinati",lnP,-.063339114,-6.137488138319069,.75999999,-.10106894,.48199999,1,3
+"principale (800 m, 20%)",(1) PRINCIPALE: controlli abbinati + non ancora trattate,lnR,-.047711875,-4.659155195979093,.47299999,.0072096847,.89700001,3,6
+"principale (800 m, 20%)",(2) tutte le zone mai esposte + non ancora trattate,lnR,-.05741312,-5.579608057308938,.27399999,.017876782,.71399999,3,16
+raggio 1.000 m,(1) PRINCIPALE: controlli abbinati + non ancora trattate,lnR,-.012717578,-1.263705096791357,.79799998,.013252249,.76800001,4,8
+raggio 1.000 m,(2) tutte le zone mai esposte + non ancora trattate,lnR,-.0062245317,-.6205199415255547,.88800001,.023603551,.63800001,4,16
+raggio 500 m,(1) PRINCIPALE: controlli abbinati + non ancora trattate,lnR,-.035227284,-3.461402530622948,.19400001,.02823915,.514,5,6
+raggio 500 m,(2) tutte le zone mai esposte + non ancora trattate,lnR,-.03076582,-3.02973688347361,.37200001,.051872071,.22,5,20
+senza un'area trattata,affitti (1) senza la zona C20,lnR,-.011119531,-1.105793798580335,.83700001,-.04568119,.54699999,2,6
+senza un'area trattata,affitti (1) senza la zona D12,lnR,-.084683582,-8.119703596434025,.25999999,.0036486837,.95899999,2,6
+senza un'area trattata,affitti (1) senza la zona D24,lnR,-.044737361,-4.3751403324653,.58399999,.056362692,.493,2,6
+soglia 10%,(1) PRINCIPALE: controlli abbinati + non ancora trattate,lnR,-.019781407,-1.958703867401923,.57999998,.0092726089,.81999999,8,10
+soglia 10%,(2) tutte le zone mai esposte + non ancora trattate,lnR,-.014059987,-1.396160691664805,.648,.019739334,.57999998,8,16
+soglia 30%,(1) PRINCIPALE: controlli abbinati + non ancora trattate,lnR,-.048199907,-4.705673194259196,.74599999,-.0079867579,1,1,3
+soglia 30%,(2) tutte le zone mai esposte + non ancora trattate,lnR,-.01060972,-1.055363534646048,.93800002,.015755152,.89200002,1,16
+"principale (800 m, 20%)",(5) NIL: mai esposti + non ancora trattati,r_ac,-3.2312515,,.064000003,-.3814981,.80000001,12,57
+"principale (800 m, 20%)",(6) NIL: abbinati per composizione + non ancora trattati,r_ac,-3.5072594,,.0099999998,-1.1826396,.244,12,21
+raggio 1.000 m,(5) NIL: mai esposti + non ancora trattati,r_ac,-1.7162975,,.25600001,-.28334549,.86000001,8,54
+raggio 1.000 m,(6) NIL: abbinati per composizione + non ancora trattati,r_ac,-2.5842071,,.024,-.41560578,.63200003,8,19
+raggio 500 m,(5) NIL: mai esposti + non ancora trattati,r_ac,-2.0340436,,.28400001,-.26036754,.852,8,60
+raggio 500 m,(6) NIL: abbinati per composizione + non ancora trattati,r_ac,-2.3877382,,.056000002,-1.1850162,.12,8,14
+senza un'area trattata,uscite (6) senza il NIL 21 ,r_ac,-3.8682003,,.0080000004,-1.2205241,.26199999,11,21
+senza un'area trattata,uscite (6) senza il NIL 22 ,r_ac,-3.5586762,,.02,-1.120353,.30399999,11,21
+senza un'area trattata,uscite (6) senza il NIL 24 ,r_ac,-2.1183374,,.078000002,-.69415545,.308,11,21
+senza un'area trattata,uscite (6) senza il NIL 25 ,r_ac,-3.8276036,,.0099999998,-1.1668986,.294,11,21
+senza un'area trattata,uscite (6) senza il NIL 26 ,r_ac,-4.1634798,,.012,-1.2426418,.30199999,11,21
+soglia 10%,(5) NIL: mai esposti + non ancora trattati,r_ac,-1.6814042,,.28799999,-.12142658,.912,14,57
+soglia 10%,(6) NIL: abbinati per composizione + non ancora trattati,r_ac,-2.2102702,,.075999998,-.49395046,.54000002,14,25
+soglia 30%,(5) NIL: mai esposti + non ancora trattati,r_ac,-1.9001042,,.36000001,-.071571246,.95599997,6,57
+soglia 30%,(6) NIL: abbinati per composizione + non ancora trattati,r_ac,-2.3538082,,.079999998,-1.0524832,.19599999,6,11
