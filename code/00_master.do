@@ -205,6 +205,7 @@ do "$CODE/19d_m4_dose.do"            // M4: esposizione continua (quota dell'are
 do "$CODE/19e_m4_sdid.do"            // M4: synthetic difference-in-differences (pacchetto sdid)
 do "$CODE/19f_m4_daniele_romito.do"  // M4: controlli di Daniele e Romito (centroide 1 km, fascia 1-2 km, controllo sintetico per zona)
 do "$CODE/19g_m4_tabella_stime.do"   // M4: tabella unica delle stime (IC95, inferenza, campioni, periodi) e date di trattamento
+do "$CODE/19h_m4_event_study.do"     // M4: event study con bande di permutazione (puntuali e simultanee) e composizione
 
 di as txt _n "Fine: `c(current_date)' `c(current_time)'"
 di as txt "Moduli eseguiti con:  indice=" $IX_OK "  CPI=" $CPI_OK "  shapefile NIL=" $SHP_OK ///

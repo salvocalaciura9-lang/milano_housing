@@ -60,8 +60,8 @@
 * i gruppi di apertura vengono riassegnati a caso alle aree del campione
 * ($M4_PERMS volte) e si conta quante volte l'effetto e' grande come quello stimato.
 *
-* Output: $TAB/m4_groups.csv, m4_cs_results.csv, m4_cs_event.csv;
-*         $FIG/m4_cs_event_rent.png, m4_cs_event_price.png
+* Output: $TAB/m4_groups.csv, m4_cs_results.csv, m4_cs_event.csv
+*         (i grafici dell'event study sono nel modulo 19h)
 *==============================================================================*
 version 16
 di as txt _n "{hline 78}" _n "19 - M4: DIFF-IN-DIFF CON APERTURE SCAGLIONATE E CONTROLLI MIGLIORI" _n "{hline 78}"
@@ -407,15 +407,6 @@ preserve
 use `e_rent', clear
 append using `e_price'
 export delimited using "$TAB/m4_cs_event.csv", replace
-foreach o in rent price {
-    local lab = cond("`o'" == "rent", "ln affitto", "ln prezzo")
-    twoway (connected att e if outcome == "`o'", lcolor("37 106 191") mcolor("37 106 191") msize(small)), ///
-        yline(0, lcolor(gs8)) xline(-0.5, lcolor("230 100 50") lpattern(dash)) ///
-        xlabel(-12(2)6) xtitle("Semestri dall'apertura della propria tratta") ///
-        ytitle("Differenza trattate - controlli, `lab'") ///
-        title("M4: `lab', zone servite vs controlli abbinati e non ancora trattate", size(medsmall)) ///
-        legend(off) graphregion(color(white)) ///
-        note("Callaway e Sant'Anna, base = semestre prima dell'apertura (-1). Media pesata dei gruppi di apertura.", size(vsmall))
-    graph export "$FIG/m4_cs_event_`o'.png", replace width(2400)
-}
+* i grafici dell'event study, con bande di permutazione e numero di aree per
+* semestre, sono prodotti dal modulo 19h
 restore
