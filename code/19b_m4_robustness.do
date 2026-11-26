@@ -71,18 +71,20 @@ program define m4power
         local n = r(N)
         mata: m4_mde("e")
     }
-    frame post m4pw ("`label'") ("`y'") (`att') (r_c) (r_mde80) (r_sd) (`n')
+    m4tlab `tmax' `step'
+    frame post m4pw ("`label'") ("`y'") (`att') (r_c) (r_mde80) (r_sd) (`n') (r_c_se) (r_mde_se) ("fino a `r(s)'")
     di as txt "  -> " as res "`label'" as txt " [`y']: stima " as res %8.4f `att' ///
-        as txt "   valore critico 5% " as res %7.4f r_c as txt "   MDE80 " as res %7.4f r_mde80 ///
-        as txt "   (permutazioni valide: `n')"
+        as txt "   valore critico 5% " as res %7.4f r_c as txt " (MC se " %6.4f r_c_se ")" ///
+        as txt "   MDE80 " as res %7.4f r_mde80 as txt " (MC se " %6.4f r_mde_se ")" ///
+        as txt "   dev. st. placebo " %6.4f r_sd "   (permutazioni valide: `n')"
 end
 
 capture mata: mata drop m4_mde()
 mata:
 void m4_mde(string scalar v)
 {
-    real colvector e, a
-    real scalar c, d, step, pw
+    real colvector e, a, eb, ab, cs, ds
+    real scalar c, d, step, pw, b, n, cb, db, pb
     e = st_data(., v)
     a = sort(abs(e), 1)
     c = a[ceil(0.95*rows(a))]
@@ -96,11 +98,31 @@ void m4_mde(string scalar v)
     st_numscalar("r_c", c)
     st_numscalar("r_mde80", d)
     st_numscalar("r_sd", sqrt(variance(e)))
+    // errore Monte Carlo di c e dell'MDE (bootstrap delle stime permutate, 200 repliche)
+    n = rows(e)
+    cs = J(200, 1, .)
+    ds = J(200, 1, .)
+    for (b = 1; b <= 200; b++) {
+        eb = e[ceil(runiform(n, 1)*n)]
+        ab = sort(abs(eb), 1)
+        cb = ab[ceil(0.95*n)]
+        db = 0
+        pb = 0
+        while (pb < 0.8 & db < 10*cb) {
+            db = db + cb/400
+            pb = mean((abs(db :+ eb) :>= cb))
+        }
+        cs[b] = cb
+        ds[b] = db
+    }
+    st_numscalar("r_c_se", sqrt(variance(cs)))
+    st_numscalar("r_mde_se", sqrt(variance(ds)))
 }
 end
 
 capture frame drop m4pw
-frame create m4pw str70 spec str12 outcome double att double crit5 double mde80 double sd_perm long nperm
+frame create m4pw str70 spec str12 outcome double att double crit5 double mde80 double sd_perm long nperm ///
+    double crit5_se double mde80_se str20 periodi
 
 di as txt _n "  {ul:A. Potenza del test (effetto minimo rilevabile)}"
 use "$WORK/m4_zone_panel.dta", clear
@@ -110,6 +132,12 @@ m4power lnR, unit(zid) time(t) cohort(cohort) sample(s_all) step(0.5) tmax($M4_T
     perms($M4_PERMS) label("(2) affitti, tutte le mai esposte + non ancora trattate")
 m4power lnP, unit(zid) time(t) cohort(cohort) sample(s_match) step(0.5) tmax($M4_TLAST) ///
     perms($M4_PERMS) label("(4) prezzi, controlli abbinati")
+* MDE per orizzonte (stesso pannello, stessi controlli): quanto cambia la potenza
+* allungando la finestra dopo l'apertura di un semestre alla volta
+foreach tm in 2025 2025.5 {
+    m4power lnR, unit(zid) time(t) cohort(cohort) sample(s_match) step(0.5) tmax(`tm') ///
+        perms($M4_PERMS) label("(1h) affitti, orizzonte ridotto")
+}
 use "$WORK/m4_nil_panel.dta", clear
 local NP = max(199, floor($M4_PERMS/2))
 m4power r_ac, unit(nil) time(t) cohort(cohort) sample(s_nil) step(1) tmax(2024) ///
@@ -127,8 +155,7 @@ frame m4pw {
 }
 
 *--- B. Togliere un'area trattata alla volta -----------------------------------*
-capture frame drop m4cs
-frame create m4cs str90 spec str16 outcome double att double p_perm double pre double p_perm_pre long nT long nC
+m4cs_init
 
 di as txt _n "  {ul:B. Senza un'area trattata alla volta}"
 use "$WORK/m4_zone_panel.dta", clear

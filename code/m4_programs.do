@@ -3,7 +3,8 @@
 * Programmi del diff-in-diff sulla M4, usati dai moduli 19 e 19b:
 *   csatt    ATT di Callaway e Sant'Anna con periodo base universale
 *   m4_perm  (Mata) permutazione dei gruppi di apertura tra le aree
-*   m4run    stima + test di permutazione, una riga nel frame m4cs
+*   m4run    stima + test di permutazione + IC95, una riga nel frame m4cs
+*   m4cs_init crea il frame m4cs
 *   m4groups gruppo di apertura di un'area dalla sua esposizione alle tratte
 *==============================================================================*
 * csatt: ATT di Callaway e Sant'Anna con periodo base universale (g - step).
@@ -13,10 +14,21 @@
 *   r(att) = media degli ATT(g,t) dopo l'apertura (t da g a tmax), pesata per la
 *            numerosita' del gruppo;
 *   r(pre) = stessa media sugli anni prima (da g - prewin*step a g - 2*step): placebo.
+*   r(post) = per ogni gruppo: periodi dopo l'apertura usati (primo-ultimo, numero)
+*   opzione never: controlli solo mai esposti (senza i non ancora trattati),
+*   per il confronto con il synthetic DiD sullo stesso campione (modulo 19e).
+* m4tlab: etichetta di un periodo (2023.5 -> 2023S2 se step 0,5; anno altrimenti)
+capture program drop m4tlab
+program define m4tlab, rclass
+    args t step
+    if `step' == 0.5 return local s = string(floor(`t' + 1e-6)) + "S" + string(1 + round(2*(`t' - floor(`t' + 1e-6))))
+    else return local s = string(round(`t'))
+end
+
 capture program drop csatt
 program define csatt, rclass
     syntax varname, Unit(varname) Time(varname) Cohort(varname) Sample(varname) ///
-        Step(real) Tmax(real) [Prewin(integer 8) ESframe(string)]
+        Step(real) Tmax(real) [Prewin(integer 8) ESframe(string) NEVer]
     local y `varlist'
     tempvar yb dy trt ctl mT mC
     quietly levelsof `cohort' if `cohort' > 0 & `sample', local(G)
@@ -24,6 +36,7 @@ program define csatt, rclass
     local den 0
     local nump 0
     local denp 0
+    local postd
     if "`esframe'" != "" {
         capture frame drop `esframe'
         frame create `esframe' double g double t double att long nT
@@ -35,7 +48,8 @@ program define csatt, rclass
             bysort `unit': egen double `yb' = max(cond(abs(`time' - `b') < 1e-6, `y', .))
             gen double `dy' = `y' - `yb' if `sample'
             gen byte `trt' = abs(`cohort' - `g') < 1e-6 & `sample'
-            gen byte `ctl' = `sample' & !`trt' & (`cohort' == 0 | `cohort' > max(`time', `b') + 1e-6)
+            if "`never'" != "" gen byte `ctl' = `sample' & `cohort' == 0
+            else gen byte `ctl' = `sample' & !`trt' & (`cohort' == 0 | `cohort' > max(`time', `b') + 1e-6)
             bysort `time': egen double `mT' = mean(cond(`trt', `dy', .))
             bysort `time': egen double `mC' = mean(cond(`ctl', `dy', .))
             count if `trt' & abs(`time' - `b') < 1e-6 & !missing(`yb')
@@ -43,6 +57,9 @@ program define csatt, rclass
             levelsof `time' if `time' <= `tmax' + 1e-6, local(T)
         }
         if `ng' == 0 continue
+        local np 0
+        local tp1 .
+        local tp2 .
         foreach t of local T {
             quietly summarize `mT' if abs(`time' - `t') < 1e-6, meanonly
             local a = r(mean)
@@ -52,6 +69,9 @@ program define csatt, rclass
             if `t' >= `g' - 1e-6 {
                 local num = `num' + `ng'*`a'
                 local den = `den' + `ng'
+                local ++np
+                local tp1 = min(`tp1', `t')
+                local tp2 = cond(missing(`tp2'), `t', max(`tp2', `t'))
             }
             if `t' <= `g' - 2*`step' + 1e-6 & `t' >= `g' - `prewin'*`step' - 1e-6 {
                 local nump = `nump' + `ng'*`a'
@@ -59,9 +79,19 @@ program define csatt, rclass
             }
             if "`esframe'" != "" frame post `esframe' (`g') (`t') (`a') (`ng')
         }
+        m4tlab `g' `step'
+        local gl `r(s)'
+        if `np' > 0 {
+            m4tlab `tp1' `step'
+            local l1 `r(s)'
+            m4tlab `tp2' `step'
+            local postd "`postd' g`gl'(`ng'): `l1'-`r(s)' (`np');"
+        }
+        else local postd "`postd' g`gl'(`ng'): nessun periodo dopo;"
     }
     return scalar att = cond(`den' > 0, `num'/`den', .)
     return scalar pre = cond(`denp' > 0, `nump'/`denp', .)
+    return local post = strtrim("`postd'")
 end
 
 * permutazione dei gruppi di apertura tra le aree del campione
@@ -75,16 +105,43 @@ void m4_perm(string scalar c, string scalar sel, string scalar out)
 }
 end
 
+* frame dei risultati (stesse colonne in tutti i moduli)
+*   ci_lo, ci_hi: intervallo al 95% per inversione del test di permutazione,
+*     att +/- c con c = 95-esimo percentile di |stime con gruppi permutati|
+*     (approssimazione con effetto costante: Imbens e Rubin, 2015, cap. 5;
+*     Conley e Taber, 2011)
+*   periodi: primo periodo con dati - ultimo periodo usato; post: per ogni
+*     gruppo di apertura g(numero di aree): periodi dopo l'apertura usati
+capture program drop m4cs_init
+program define m4cs_init
+    capture frame drop m4cs
+    frame create m4cs str90 spec str16 outcome double att double p_perm double pre double p_perm_pre ///
+        long nT long nC double ci_lo double ci_hi double crit5 long nperm str70 metodo str20 periodi str160 post
+end
+
+* 95-esimo percentile dei valori assoluti di una colonna di stime permutate
+capture mata: mata drop m4_crit()
+mata:
+real scalar m4_crit(real colvector e)
+{
+    real colvector a
+    a = sort(abs(select(e, e :< .)), 1)
+    if (rows(a) == 0) return(.)
+    return(a[ceil(0.95*rows(a))])
+}
+end
+
 * m4run: stima, permutazione, salvataggio di una riga dei risultati
 capture program drop m4run
 program define m4run
     syntax varname, Unit(varname) Time(varname) Cohort(varname) Sample(varname) ///
-        Step(real) Tmax(real) Spec(string) Perms(integer) [Prewin(integer 8) ESframe(string)]
+        Step(real) Tmax(real) Spec(string) Perms(integer) [Prewin(integer 8) ESframe(string) NEVer]
     local y `varlist'
     csatt `y', unit(`unit') time(`time') cohort(`cohort') sample(`sample') step(`step') ///
-        tmax(`tmax') prewin(`prewin') esframe(`esframe')
+        tmax(`tmax') prewin(`prewin') esframe(`esframe') `never'
     local att = r(att)
     local pre = r(pre)
+    local post `"`r(post)'"'
     tempvar first cpf cp
     quietly {
         bysort `unit' (`time'): gen byte `first' = _n == 1 & `sample'
@@ -92,10 +149,18 @@ program define m4run
         local nT = r(N)
         count if `first' & `cohort' == 0
         local nC = r(N)
+        summarize `time' if `sample' & !missing(`y'), meanonly
+        local t0 = r(min)
+        local t1 = min(`tmax', r(max))
     }
+    m4tlab `t0' `step'
+    local per `r(s)'
+    m4tlab `t1' `step'
+    local per "`per'-`r(s)'"
     local ext 0
     local extp 0
     local ok 0
+    mata: __m4e = J(0, 1, .)
     forvalues j = 1/`perms' {
         quietly {
             capture drop `cpf' `cp'
@@ -104,19 +169,25 @@ program define m4run
             bysort `unit': egen double `cp' = max(`cpf')
         }
         csatt `y', unit(`unit') time(`time') cohort(`cp') sample(`sample') step(`step') ///
-            tmax(`tmax') prewin(`prewin')
+            tmax(`tmax') prewin(`prewin') `never'
         if !missing(r(att)) {
             local ++ok
+            mata: __m4e = __m4e \ `r(att)'
             if abs(r(att)) >= abs(`att') - 1e-12 local ++ext
             if abs(r(pre)) >= abs(`pre') - 1e-12 local ++extp
         }
     }
+    mata: st_local("crit", strofreal(m4_crit(__m4e), "%21.0g"))
     local p = (`ext' + 1)/(`ok' + 1)
     local pp = (`extp' + 1)/(`ok' + 1)
-    frame post m4cs ("`spec'") ("`y'") (`att') (`p') (`pre') (`pp') (`nT') (`nC')
+    local met = cond("`never'" != "", "permutazione (`ok'), controlli solo mai esposti", "permutazione dei gruppi di apertura (`ok')")
+    frame post m4cs ("`spec'") ("`y'") (`att') (`p') (`pre') (`pp') (`nT') (`nC') ///
+        (`att' - `crit') (`att' + `crit') (`crit') (`ok') ("`met'") ("`per'") ("`post'")
     di as txt "  -> " as res "`spec'" as txt " [`y']: effetto " as res %8.4f `att' ///
-        as txt "  p perm = " as res %5.3f `p' as txt "   placebo pre " as res %8.4f `pre' ///
-        as txt "  p perm = " as res %5.3f `pp' as txt "   trattate " `nT' "  controlli " `nC'
+        as txt " [IC95 " %7.4f `att' - `crit' ", " %7.4f `att' + `crit' "]  p perm = " as res %5.3f `p' ///
+        as txt "   placebo pre " as res %8.4f `pre' as txt "  p perm = " as res %5.3f `pp' ///
+        as txt "   trattate " `nT' "  controlli " `nC' "   periodi `per'"
+    di as txt "     dopo l'apertura: `post'"
 end
 
 * gruppo di apertura di un'area: prima tratta con esposizione >= soglia

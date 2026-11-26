@@ -49,6 +49,7 @@ foreach f in "$WORK/m4_zone_panel.dta" "$WORK/m4_nil_panel.dta" {
         exit
     }
 }
+do "$CODE/m4_programs.do"     // m4tlab, m4_crit
 set seed $SEED
 
 *--- 0. Programmi --------------------------------------------------------------*
@@ -136,10 +137,18 @@ program define m4dose
         local nC = r(N)
         summarize `dose' if `first' & `dose' > 0
         local dbar = r(mean)
+        summarize `time' if `sample' & !missing(`y'), meanonly
+        local t0 = r(min)
+        local t1 = min(`tmax', r(max))
     }
+    m4tlab `t0' `step'
+    local per `r(s)'
+    m4tlab `t1' `step'
+    local per "`per'-`r(s)'"
     local ext 0
     local extp 0
     local ok 0
+    mata: __m4e = J(0, 1, .)
     forvalues j = 1/`perms' {
         quietly {
             capture drop `cf' `df' `cp' `dp'
@@ -153,13 +162,19 @@ program define m4dose
             step(`step') tmax(`tmax') prewin(`prewin')
         if !missing(r(b)) {
             local ++ok
+            mata: __m4e = __m4e \ `r(b)'
             if abs(r(b)) >= abs(`b') - 1e-12 local ++ext
             if abs(r(pre)) >= abs(`pre') - 1e-12 local ++extp
         }
     }
+    mata: st_local("crit", strofreal(m4_crit(__m4e), "%21.0g"))
     local p = (`ext' + 1)/(`ok' + 1)
     local pp = (`extp' + 1)/(`ok' + 1)
-    frame post m4d ("`spec'") ("`y'") (`b') (`b'*`dbar') (`b'*0.2) (`p') (`pre') (`pp') (`nD') (`nC') (`dbar')
+    * IC95 della pendenza b per inversione del test di permutazione (b +/- c);
+    * eff_mean_lo/hi = stesso intervallo all'esposizione media
+    frame post m4d ("`spec'") ("`y'") (`b') (`b'*`dbar') (`b'*0.2) (`p') (`pre') (`pp') (`nD') (`nC') (`dbar') ///
+        (`b' - `crit') (`b' + `crit') ((`b' - `crit')*`dbar') ((`b' + `crit')*`dbar') (`crit') (`ok') ///
+        ("permutazione congiunta di gruppo e quota (`ok')") ("`per'")
     di as txt "  -> " as res "`spec'" as txt " [`y']: effetto al 100% " as res %8.4f `b' ///
         as txt "  all'esposizione media (" %4.2f `dbar' ") " as res %8.4f `b'*`dbar' ///
         as txt "  p perm = " as res %5.3f `p' as txt "   placebo " as res %8.4f `pre' ///
@@ -168,7 +183,8 @@ end
 
 capture frame drop m4d
 frame create m4d str80 spec str12 outcome double b double eff_mean double eff20 double p_perm ///
-    double pre double p_perm_pre long nD long nC double dose_mean
+    double pre double p_perm_pre long nD long nC double dose_mean double ci_lo double ci_hi ///
+    double eff_mean_lo double eff_mean_hi double crit5 long nperm str60 metodo str20 periodi
 
 * gruppo di apertura di un'area esposta: tratta con la quota servita di nuovo maggiore
 capture program drop dosegroups

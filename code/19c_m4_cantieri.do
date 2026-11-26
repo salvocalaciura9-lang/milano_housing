@@ -124,8 +124,7 @@ export delimited nil `nm' ruolo cohort_c cohort eA eB if !missing(cohort_c) ///
 restore
 
 *--- 3. Stime --------------------------------------------------------------------------*
-capture frame drop m4cs
-frame create m4cs str90 spec str16 outcome double att double p_perm double pre double p_perm_pre long nT long nC
+m4cs_init
 local NP = max(199, floor($M4_PERMS/2))
 local YC "r_ac r_in nm_c0009 nm_c2029 nm_c3039 sh_g2539 sh_for27 lnpop"
 foreach v of local YC {

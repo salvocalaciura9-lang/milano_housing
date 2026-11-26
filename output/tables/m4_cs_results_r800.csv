@@ -1,7 +1,7 @@
-spec,outcome,att,p_perm,pre,p_perm_pre,nT,nC
-"(0) TWFE classico, tutte le mai esposte (solo confronto)",lnR,-.0993382963712948,,,,,
-(1) PRINCIPALE: controlli abbinati + non ancora trattate,lnR,-.0534601223681039,.378,.0072096846638861,.902,3,6
-(2) tutte le zone mai esposte + non ancora trattate,lnR,-.0607044790076536,.226,.0178767807240422,.736,3,16
-"(4) prezzi di compravendita, controlli abbinati",lnP,-.023741093882126,.53,-.0440095818527955,.316,3,6
-(5) NIL: mai esposti + non ancora trattati,r_ac,-3.231251404745089,.084,-.3814980962197041,.8,12,57
-(6) NIL: abbinati per composizione + non ancora trattati,r_ac,-3.507259457032194,.008,-1.182639630570743,.26,12,21
+spec,outcome,att,p_perm,pre,p_perm_pre,nT,nC,ci_lo,ci_hi,crit5,nperm,metodo,periodi,post
+"(0) TWFE classico, tutte le mai esposte (solo confronto)",lnR,-.0993382963712948,.1104237317897528,,,,19,-.2236385060782186,.0249619133356289,,,errori cluster per zona (inaffidabili con poche trattate),2014S2-,
+(1) PRINCIPALE: controlli abbinati + non ancora trattate,lnR,-.0534601223681039,.412,.0072096846638861,.892,3,6,-.1693000498574211,.0623798051212133,.1158399274893172,499,permutazione dei gruppi di apertura (499),2014S2-2026S1,g2023S1(2): 2023S1-2026S1 (7); g2025S1(1): 2025S1-2026S1 (3);
+(2) tutte le zone mai esposte + non ancora trattate,lnR,-.0607044790076536,.236,.0178767807240422,.714,3,16,-.1592357400262587,.0378267820109515,.0985312610186051,499,permutazione dei gruppi di apertura (499),2014S2-2026S1,g2023S1(2): 2023S1-2026S1 (7); g2025S1(1): 2025S1-2026S1 (3);
+"(4) prezzi di compravendita, controlli abbinati",lnP,-.023741093882126,.524,-.0440095818527955,.298,3,6,-.0876375116169444,.0401553238526924,.0638964177348184,499,permutazione dei gruppi di apertura (499),2014S2-2026S1,g2023S1(2): 2023S1-2026S1 (7); g2025S1(1): 2025S1-2026S1 (3);
+(5) NIL: mai esposti + non ancora trattati,r_ac,-3.231251404745089,.096,-.3814980962197053,.772,12,57,-7.029356708376825,.5668538988866469,3.798105303631736,249,permutazione dei gruppi di apertura (249),2012-2024,g2023(5): 2023-2024 (2); g2025(7): nessun periodo dopo;
+(6) NIL: abbinati per composizione + non ancora trattati,r_ac,-3.507259457032195,.004,-1.182639630570743,.276,12,21,-6.231569610121596,-.7829493039427939,2.724310153089401,249,permutazione dei gruppi di apertura (249),2012-2024,g2023(5): 2023-2024 (2); g2025(7): nessun periodo dopo;

@@ -97,8 +97,7 @@ foreach f in "$RAW/ds535_tpl_metrofermate.csv" "$WORK/omi_zone21_sem.dta" {
 *------------------------------------------------------------------------------*
 do "$CODE/m4_programs.do"     // csatt, m4_perm, m4run, m4groups
 
-capture frame drop m4cs
-frame create m4cs str90 spec str16 outcome double att double p_perm double pre double p_perm_pre long nT long nC
+m4cs_init
 
 *------------------------------------------------------------------------------*
 * 1. Stazioni ed esposizione dei punti della griglia
@@ -273,7 +272,19 @@ gen byte D = cohort > 0 & !missing(cohort) & t >= cohort - 1e-6
 quietly regress lnR D i.zid i.tid if s_all, vce(cluster zid)
 di as txt "  (0) TWFE classico, ln affitto: " as res %8.4f _b[D] as txt "  (p cluster = " ///
     %5.3f 2*ttail(e(df_r), abs(_b[D]/_se[D])) ")"
-frame post m4cs ("(0) TWFE classico, tutte le mai esposte (solo confronto)") ("lnR") (_b[D]) (.) (.) (.) (.) (.)
+local tq = invttail(e(df_r), 0.025)
+local b0 = _b[D]
+local se0 = _se[D]
+local p0 = 2*ttail(e(df_r), abs(_b[D]/_se[D]))
+quietly summarize tid
+local tm0 = r(min)
+quietly count if s_all & tid == `tm0' & cohort > 0
+local n0t = r(N)
+quietly count if s_all & tid == `tm0' & cohort == 0
+local n0c = r(N)
+frame post m4cs ("(0) TWFE classico, tutte le mai esposte (solo confronto)") ("lnR") (`b0') ///
+    (`p0') (.) (.) (`n0t') (`n0c') (`b0' - `tq'*`se0') (`b0' + `tq'*`se0') (.) (.) ///
+    ("errori cluster per zona (inaffidabili con poche trattate)") ("") ("")
 
 m4run lnR, unit(zid) time(t) cohort(cohort) sample(s_match) step(0.5) tmax($M4_TLAST) ///
     spec("(1) PRINCIPALE: controlli abbinati + non ancora trattate") perms($M4_PERMS) esframe(es_rent)

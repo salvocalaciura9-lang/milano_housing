@@ -203,6 +203,8 @@ do "$CODE/19b_m4_robustness.do"      // M4: potenza del test, senza un'area trat
 do "$CODE/19c_m4_cantieri.do"        // M4: anticipazione, trattamento dall'inizio dei cantieri (NIL)
 do "$CODE/19d_m4_dose.do"            // M4: esposizione continua (quota dell'area servita di nuovo)
 do "$CODE/19e_m4_sdid.do"            // M4: synthetic difference-in-differences (pacchetto sdid)
+do "$CODE/19f_m4_daniele_romito.do"  // M4: controlli di Daniele e Romito (centroide 1 km, fascia 1-2 km, controllo sintetico per zona)
+do "$CODE/19g_m4_tabella_stime.do"   // M4: tabella unica delle stime (IC95, inferenza, campioni, periodi) e date di trattamento
 
 di as txt _n "Fine: `c(current_date)' `c(current_time)'"
 di as txt "Moduli eseguiti con:  indice=" $IX_OK "  CPI=" $CPI_OK "  shapefile NIL=" $SHP_OK ///
