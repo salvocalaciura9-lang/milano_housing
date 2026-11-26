@@ -1,0 +1,81 @@
+% Materials and Methods body for the official PNAS Research Article template (2025).
+% IMPORTANT: no \documentclass, \begin{document}, \matmethods, or \showmatmethods here.
+% In the PNAS main .tex file, use:
+%   \matmethods{\input{materials_methods_pnas}}
+%   \showmatmethods{}
+% BibTeX entries used below are in milano_refs.bib (upload it to the Overleaf project).
+% Checked against the replication code on main (commit 6a31c73, 26 Nov 2026).
+
+\subsection*{Data and geographical harmonisation}
+We combined a descriptive neighbourhood affordability index with a case study of metro expansion. We assembled semiannual housing quotations from the Italian Revenue Agency's Osservatorio del Mercato Immobiliare (OMI), municipal taxpayer income distributions, population registers and metro-station coordinates \cite{milano_omi,milano_irpef,milano_population,milano_atm}. We used quotations for civil dwellings (\emph{abitazioni civili}) in normal condition; they provide reference intervals rather than individual transactions. We used interval midpoints, expressed per square metre of gross floor area, with rents measured monthly. Neighbourhoods are Milan's Nuclei di Identit\`a Locale (NIL).
+
+We harmonised OMI quotations to NIL boundaries using area weights approximated on a regular grid of approximately 28 m, applying the zoning version assigned to each semester. A neighbourhood-semester was retained when quoted areas covered at least 80\% of its grid points; annual rents averaged available qualifying semesters. We excluded the transitional first half of 2014, so the 2014 value relies on the second semester only. Zone C14 was carved out of zone C12 and quoted separately only from the second half of 2018; before then, its area received C12 quotations for NIL aggregation. The main affordability panel contains 75 NIL observed annually during 2014--2024, comprising 825 observations. Eligible NIL had at least 500 residents in 2019 and nonmissing annual indices throughout this period.
+
+\begin{equation}
+\begin{aligned}
+R_{is}&=\frac{\sum_{z\in Q_s} n_{izs}R_{zs}}{\sum_{z\in Q_s} n_{izs}},\\
+C_{is}&=\frac{\sum_{z\in Q_s} n_{izs}}{N_i}.
+\end{aligned}
+\label{eq:omi_nil}
+\end{equation}
+Here $n_{izs}$ is the number of grid points of NIL $i$ lying in OMI zone $z$ under the zoning in force in semester $s$, $Q_s$ is the set of zones with a quotation in $s$, $R_{zs}$ is the quotation midpoint, and $N_i$ is the total number of grid points in NIL $i$. Only quoted zones enter the rent average, and $R_{is}$ is retained when $C_{is}\geq 0.80$.
+
+\subsection*{Affordability index}
+We measured the annual rent of a standard $60\,\mathrm{m}^2$ dwelling relative to a common citywide income benchmark:
+\begin{equation}
+A_{it}=\frac{12\cdot 60\cdot R_{it}}{\widetilde{Y}^{\mathrm{net}}_t}.
+\label{eq:affordability}
+\end{equation}
+Here, $i$ indexes NIL and $t$ indexes years; $R_{it}$ denotes neighbourhood rent per square metre and $\widetilde{Y}^{\mathrm{net}}_t$ denotes the simulated annual net income at the median taxpayer rank. Higher values indicate lower affordability. Using the same income benchmark across neighbourhoods measures the geographical options available to a standardised prospective renter. It does not measure local household income or actual rent expenditure.
+
+We located the median taxpayer within the published income classes using their cumulative frequencies. We transformed the endpoints of that class using the year-specific tax rules implemented in the replication code, then interpolated linearly between the adjusted endpoints. The baseline scenario applies employee tax credits, national income tax, regional and municipal surtaxes, and employment-related tax bonuses. It excludes household-specific deductions and unobserved transfers. This procedure produces a model-based individual income benchmark; it does not recover the observed distribution of household disposable income.
+
+\begin{equation}
+\begin{aligned}
+\widetilde{Y}^{\mathrm{net}}_t
+&= f_t(L_t)+\frac{N_t/2-F^{-}_t}{n_t}\\
+&\quad\times\bigl[f_t(U_t)-f_t(L_t)\bigr].
+\end{aligned}
+\label{eq:net_median}
+\end{equation}
+$L_t$ and $U_t$ are the gross-income limits of the class containing the median taxpayer; $F^{-}_t$ is the cumulative count of taxpayers below that class in year $t$, $n_t$ its frequency, $N_t$ the total taxpayer count, and $f_t$ the year-specific gross-to-net transformation.
+
+We classified neighbourhoods with $A_{it}>0.40$ as exceeding the benchmark, drawing on the 40\% housing-cost convention \cite{oecd_housing}. We reported both the proportion of NIL above this threshold and the share of the study population living in those NIL, weighted by annual resident counts. The latter is a geographical indicator and is not an estimate of the official household overburden rate. Sensitivity analyses considered $40\,\mathrm{m}^2$ dwellings, two median incomes, gross income with a 30\% threshold, and alternative tax-credit scenarios, including pensioner, self-employed and no-credit assumptions.
+
+\subsection*{M4 case study}
+We examined changes around the staggered opening of the M4 metro using log rents and sale quotations for the 37 OMI zones with complete series from 2014H2 to 2026H1 (24 semesters). On the spatial grid, a point was newly served if it lay within 500 m of an M4 station and more than 500 m from another metro line. An area entered the earliest opening cohort whose newly served points covered at least 20\% of its area. Areas outside every M4 catchment supplied never-exposed controls; intermediate cases were excluded.
+
+\begin{equation}
+\begin{aligned}
+E_{ap}&=\frac{1}{N_a}\sum_{j\in a}\mathbf{1}\bigl\{
+ d^{\mathrm{M4}}_{jp}\leq 500,\\
+&\qquad\qquad d^{\mathrm{other}}_j>500\bigr\},\\
+E_{ap}&\geq 0.20.
+\end{aligned}
+\label{eq:m4_exposure}
+\end{equation}
+Here $E_{ap}$ measures the fraction of grid points in area $a$ newly served by M4 opening phase $p$, $N_a$ is the number of points in the area, and the $d$ terms are distances in metres to the corresponding metro stations. The first phase meeting the 20\% threshold defines treatment timing.
+
+The November 2022, July 2023 and October 2024 opening phases \cite{milano_m4} were coded as starting in 2023H1, 2023H2 and 2025H1, respectively. The late-year openings therefore entered the following semester. Under the baseline exposure rule (500 m radius, 20\% threshold), the housing sample contained one zone in the 2023H1 cohort and four in the 2025H1 cohort. Each exposed zone was matched to the three most similar never-exposed zones using Euclidean distances across standardised mean log rents and prices in 2014H2--2016H2, rental log growth in 2014H2--2019H2, and 2014 shares of foreign residents, residents aged 65 or older, and single-person households. The union of selected controls comprised six zones, giving 11 zones and 264 zone-semester observations.
+
+Following the group-time difference-in-differences framework \cite{callaway_santanna}, we compared each cohort's outcome change relative to the semester immediately before its opening with changes among matched never-exposed and not-yet-treated areas. Already-treated areas were excluded from the control pool. Post-opening group-time estimates were averaged using cohort-size weights. We examined event-time profiles and average pre-opening placebo contrasts. Area-level permutation diagnostics reassigned cohort labels 999 times, retaining group sizes.
+
+\begin{equation}
+\begin{aligned}
+\mathrm{ATT}(g,t)&=\bigl(\overline{Y}_{g,t}-\overline{Y}_{g,g-1}\bigr)\\
+&\quad-\bigl(\overline{Y}_{C(g,t),t}
+-\overline{Y}_{C(g,t),g-1}\bigr).
+\end{aligned}
+\label{eq:did}
+\end{equation}
+The cohort-specific baseline $g-1$ is the semester before opening. $C(g,t)$ comprises eligible never-treated or not-yet-treated areas, excluding already-treated areas.
+
+Annual analyses applied the exposure rule to residential mobility and demographic composition. The principal mobility outcome was departures to other Italian municipalities per 1,000 previous-year residents during 2012--2024, excluding moves abroad and administrative removals. Matching used the three most similar never-exposed NIL based on standardised demographic and household characteristics in 2014, together with the 2011 education indicator \cite{biferale_2026}. Standardised NIL matching variables were capped at three standard deviations. This yielded 14 distinct never-exposed controls. Three NIL had observed post-opening outcomes from 2023; five assigned to 2025 remained not-yet-treated within the observation window. Annual permutation diagnostics used 499 reassignments.
+
+\begin{equation}
+M_{it}=1000\cdot\frac{D_{it}}{P_{i,t-1}},
+\label{eq:migration}
+\end{equation}
+where $D_{it}$ denotes registered departures to other Italian municipalities and $P_{i,t-1}$ is the population in the previous year.
+
+Sensitivity analyses varied catchment radii and exposure thresholds and omitted exposed areas individually. Causal interpretation requires comparable untreated trends, limited spillovers and credible assumptions about anticipation. Construction may have affected outcomes before opening, and baseline periods can include partial operation. Short follow-up and few exposed areas further limit inference. Permutation diagnostics do not establish random assignment of the route. Registered departures measure residential mobility without identifying involuntary displacement.

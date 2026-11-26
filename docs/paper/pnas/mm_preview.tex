@@ -1,0 +1,31 @@
+% =============================================================================
+% Standalone preview of materials_methods_pnas.tex on Overleaf (or pdflatex),
+% without the PNAS class. Upload to the same Overleaf project:
+%   mm_preview.tex, materials_methods_pnas.tex and, if available, milano_refs.bib
+% then set mm_preview.tex as the main document and press Recompile.
+% In the real PNAS template keep using:
+%   \matmethods{\input{materials_methods_pnas}}
+%   \showmatmethods{}
+% =============================================================================
+\documentclass[10pt,a4paper,twocolumn]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=1.8cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage[hidelinks]{hyperref}
+
+\begin{document}
+
+\section*{Materials and Methods}
+\input{materials_methods_pnas}
+
+% The bibliography is built only if milano_refs.bib is in the project,
+% so the preview compiles even without it (citations then show as [?]).
+\IfFileExists{milano_refs.bib}{%
+  \bibliographystyle{unsrtnat}
+  \bibliography{milano_refs}%
+}{}
+
+\end{document}
