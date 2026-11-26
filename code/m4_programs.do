@@ -28,7 +28,10 @@ end
 capture program drop csatt
 program define csatt, rclass
     syntax varname, Unit(varname) Time(varname) Cohort(varname) Sample(varname) ///
-        Step(real) Tmax(real) [Prewin(integer 8) ESframe(string) NEVer]
+        Step(real) Tmax(real) [Prewin(integer 8) ESframe(string) NEVer Gap(integer 1)]
+    * gap(k): periodo di riferimento g - k*step (default 1). Con gap(2) il periodo
+    * g - step (apertura avvenuta in parte durante il periodo) non entra ne' nella
+    * base ne' negli ATT: controllo per la classificazione dei periodi di apertura.
     local y `varlist'
     tempvar yb dy trt ctl mT mC
     quietly levelsof `cohort' if `cohort' > 0 & `sample', local(G)
@@ -42,7 +45,7 @@ program define csatt, rclass
         frame create `esframe' double g double t double att long nT
     }
     foreach g of local G {
-        local b = `g' - `step'
+        local b = `g' - `gap'*`step'
         quietly {
             capture drop `yb' `dy' `trt' `ctl' `mT' `mC'
             bysort `unit': egen double `yb' = max(cond(abs(`time' - `b') < 1e-6, `y', .))
@@ -73,7 +76,7 @@ program define csatt, rclass
                 local tp1 = min(`tp1', `t')
                 local tp2 = cond(missing(`tp2'), `t', max(`tp2', `t'))
             }
-            if `t' <= `g' - 2*`step' + 1e-6 & `t' >= `g' - `prewin'*`step' - 1e-6 {
+            if `t' <= `b' - `step' + 1e-6 & `t' >= `g' - `prewin'*`step' - 1e-6 {
                 local nump = `nump' + `ng'*`a'
                 local denp = `denp' + `ng'
             }
@@ -135,10 +138,10 @@ end
 capture program drop m4run
 program define m4run
     syntax varname, Unit(varname) Time(varname) Cohort(varname) Sample(varname) ///
-        Step(real) Tmax(real) Spec(string) Perms(integer) [Prewin(integer 8) ESframe(string) NEVer]
+        Step(real) Tmax(real) Spec(string) Perms(integer) [Prewin(integer 8) ESframe(string) NEVer Gap(integer 1)]
     local y `varlist'
     csatt `y', unit(`unit') time(`time') cohort(`cohort') sample(`sample') step(`step') ///
-        tmax(`tmax') prewin(`prewin') esframe(`esframe') `never'
+        tmax(`tmax') prewin(`prewin') esframe(`esframe') `never' gap(`gap')
     local att = r(att)
     local pre = r(pre)
     local post `"`r(post)'"'
@@ -169,7 +172,7 @@ program define m4run
             bysort `unit': egen double `cp' = max(`cpf')
         }
         csatt `y', unit(`unit') time(`time') cohort(`cp') sample(`sample') step(`step') ///
-            tmax(`tmax') prewin(`prewin') `never'
+            tmax(`tmax') prewin(`prewin') `never' gap(`gap')
         if !missing(r(att)) {
             local ++ok
             mata: __m4e = __m4e \ `r(att)'

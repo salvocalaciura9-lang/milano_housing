@@ -1,6 +1,6 @@
 *==============================================================================*
 * 03c_nil_composition.do
-* Composizione della popolazione e migrazione netta per eta', per NIL e anno
+* Composizione della popolazione e variazione netta di coorte per eta', per NIL e anno
 *
 * Dati (Open Data Comune di Milano, in $RAW)
 *   ds27   residenti per NIL, eta' (anni singoli), genere e cittadinanza, 1999-2025
@@ -15,17 +15,21 @@
 *     Giappone, Corea del Sud, Oceania, Israele, Singapore), famiglie unipersonali,
 *     famiglie con capofamiglia sotto i 35 anni, componenti medi, quota di nati da
 *     madre straniera.
-*   Migrazione netta per coorte (metodo delle componenti senza decessi):
-*     netmig(a1-a2, t) = residenti di eta' a1+1..a2+1 in t - residenti di eta' a1..a2 in t-1
-*     per 1.000 residenti della coorte in t-1. Sotto i 65 anni i decessi sono pochi,
-*     quindi la differenza misura quasi solo gli spostamenti: a differenza delle
-*     cancellazioni anagrafiche, comprende anche i traslochi DENTRO Milano.
-*     Classi: 0-9 (famiglie con bambini), 20-29, 30-39 (giovani adulti), 40-64.
+*   Variazione netta di coorte (saldo residuo; variabili nm_*):
+*     nm(a1-a2, t) = 1000 x [residenti di eta' a1+1..a2+1 in t - residenti di eta'
+*     a1..a2 in t-1] / residenti di eta' a1..a2 in t-1  (eta' al 31/12, ds27).
+*     NON e' un saldo migratorio osservato: e' la variazione della stessa coorte
+*     in un anno, quindi somma iscrizioni e cancellazioni (anche i traslochi
+*     DENTRO Milano tra NIL), i decessi e le rettifiche anagrafiche (es.
+*     cancellazioni per irreperibilita'). Sotto i 65 anni i decessi sono pochi,
+*     quindi e' un'approssimazione (per eccesso di uscite) del saldo migratorio
+*     della coorte. Le nascite non entrano (eta' >= 1 in t).
+*     Classi (eta' in t-1): 0-9 (famiglie con bambini), 20-29, 30-39, 40-64.
 *
 * Output: $WORK/nil_composition_year.dta, $TAB/nil_composition_check.csv
 *==============================================================================*
 version 16
-di as txt _n "{hline 78}" _n "03c - COMPOSIZIONE DEI NIL E MIGRAZIONE NETTA PER ETA'" _n "{hline 78}"
+di as txt _n "{hline 78}" _n "03c - COMPOSIZIONE DEI NIL E VARIAZIONE NETTA DI COORTE PER ETA'" _n "{hline 78}"
 
 if "$ROOT" == "" global ROOT "C:/Users/Salvatore/Downloads/milano_housing_stata/milano_housing"
 foreach g in RAW:data/raw WORK:data/work TAB:output/tables {
@@ -85,7 +89,7 @@ foreach g in g0014 g1524 g2539 g4064 g65 {
 gen double n_for = n*!ita
 gen double n_hi = n*hi
 
-* coorti per la migrazione netta: residenti per eta' singola fino a 66 anni
+* coorti per la variazione netta di coorte: residenti per eta' singola fino a 66 anni
 preserve
 keep if age <= 66
 collapse (sum) n, by(nil year age)
@@ -111,7 +115,7 @@ drop n_*
 tempfile comp
 save `comp'
 
-* migrazione netta per coorte
+* variazione netta di coorte (saldo residuo)
 use `ages', clear
 rename n n0
 tempfile a0
@@ -134,10 +138,10 @@ gen double nm = 1000*(n1 - n0)/n0
 keep nil year cls nm
 reshape wide nm, i(nil year) j(cls) string
 rename nm* nm_*
-label variable nm_c2029 "Migrazione netta 20-29 anni (per 1.000 della coorte in t-1)"
-label variable nm_c3039 "Migrazione netta 30-39 anni (per 1.000 della coorte in t-1)"
-label variable nm_c0009 "Migrazione netta 0-9 anni (per 1.000 della coorte in t-1)"
-label variable nm_c4064 "Migrazione netta 40-64 anni (per 1.000 della coorte in t-1)"
+label variable nm_c2029 "Variazione netta di coorte 20-29 anni (saldo residuo, per 1.000 in t-1)"
+label variable nm_c3039 "Variazione netta di coorte 30-39 anni (saldo residuo, per 1.000 in t-1)"
+label variable nm_c0009 "Variazione netta di coorte 0-9 anni (saldo residuo, per 1.000 in t-1)"
+label variable nm_c4064 "Variazione netta di coorte 40-64 anni (saldo residuo, per 1.000 in t-1)"
 merge 1:1 nil year using `comp', nogen
 tempfile comp2
 save `comp2'

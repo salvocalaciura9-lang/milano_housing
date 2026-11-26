@@ -37,6 +37,7 @@ foreach f in "m4_cs_results|19 principale" "m4_cs_results_r800|19b raggio 800 m"
     "m4_cs_results_r1000|19b raggio 1.000 m" "m4_cs_results_t10|19b soglia 10%" ///
     "m4_cs_results_t30|19b soglia 30%" "m4_loo|19b senza un'area" ///
     "m4_cantieri_results|19c inizio cantieri" "m4_sdid_cs_compare|19e C&S sul campione sdid" ///
+    "m4_timing_robustness|19b periodo di apertura" ///
     "m4_dr_results|19f Daniele-Romito" {
     gettoken fn mod : f, parse("|")
     local mod = substr("`mod'", 2, .)
@@ -193,18 +194,41 @@ gen str10 apertura = ""
 replace apertura = "26/11/2022" in 1
 replace apertura = "04/07/2023" in 2
 replace apertura = "12/10/2024" in 3
-* zone OMI: il primo semestre trattato e' il primo semestre interamente dopo l'apertura
-gen double g_zone = cond(_n == 1, 2023, cond(_n == 2, 2023.5, 2025))
-gen str8 primo_sem = cond(_n == 1, "2023S1", cond(_n == 2, "2023S2", "2025S1"))
+* Regola: primo periodo trattato = primo semestre (anno, per i NIL) servito per
+* tutto o quasi tutto il periodo. Quote servite calcolate dalle date di apertura.
+gen int d_ap = cond(_n == 1, mdy(11, 26, 2022), cond(_n == 2, mdy(7, 4, 2023), mdy(10, 12, 2024)))
+format d_ap %td
+gen int y_ap = year(d_ap)
+gen byte s_ap = 1 + (month(d_ap) >= 7)
+gen int s_ini = cond(s_ap == 1, mdy(1, 1, y_ap), mdy(7, 1, y_ap))
+gen int s_fin = cond(s_ap == 1, mdy(7, 1, y_ap), mdy(1, 1, y_ap + 1))
+gen double quota_sem_apertura = (s_fin - d_ap)/(s_fin - s_ini)
+gen double quota_anno_apertura = (mdy(1, 1, y_ap + 1) - d_ap)/(mdy(1, 1, y_ap + 1) - mdy(1, 1, y_ap))
+gen str8 sem_apertura = string(y_ap) + "S" + string(s_ap)
+* zone OMI: il semestre di apertura e' trattato se servito per almeno il 90%
+gen double g_zone = cond(quota_sem_apertura >= 0.9, y_ap + (s_ap - 1)/2, y_ap + s_ap/2)
+gen str8 primo_sem = string(floor(g_zone)) + "S" + string(1 + round(2*(g_zone - floor(g_zone))))
+gen str8 sem_riferimento = string(floor(g_zone - 0.5)) + "S" + string(1 + round(2*(g_zone - 0.5 - floor(g_zone - 0.5))))
+gen double quota_servita_riferimento = cond(sem_riferimento == sem_apertura, quota_sem_apertura, 0)
+format quota_* %4.2f
+assert abs(g_zone - cond(_n == 1, 2023, cond(_n == 2, 2023.5, 2025))) < 1e-6   // coerente con il modulo 19
 gen int sem_dopo = round(2*(`zlast' - g_zone)) + 1
 gen int zone_trattate = cond(_n == 1, `nz1', cond(_n == 2, `nz2', `nz3'))
-* NIL: il primo anno trattato e' il primo anno solare interamente dopo l'apertura
-gen int g_nil = cond(_n == 1, 2023, cond(_n == 2, 2024, 2025))
+* NIL: il primo anno trattato e' il primo anno solare interamente dopo l'apertura;
+* l'anno di riferimento (g-1) e' l'anno di apertura, servito in parte
+gen int g_nil = y_ap + 1
+gen double quota_servita_anno_rif = quota_anno_apertura
+format quota_servita_anno_rif %4.2f
+assert g_nil == cond(_n == 1, 2023, cond(_n == 2, 2024, 2025))   // coerente con il modulo 19
 gen int anni_dopo_uscite = max(0, `nlast' - g_nil + 1)
 gen str40 anni_uscite = cond(anni_dopo_uscite > 0, string(g_nil) + cond(anni_dopo_uscite > 1, "-" + string(`nlast'), ""), "nessuno (fa da non ancora trattato)")
-gen int anni_dopo_migr_eta = max(0, `nmlast' - g_nil + 1)
+gen int anni_dopo_var_coorte = max(0, `nmlast' - g_nil + 1)
 gen int nil_trattati = cond(_n == 1, `nn1', cond(_n == 2, `nn2', `nn3'))
 local zl = string(floor(`zlast')) + "S" + string(1 + round(2*(`zlast' - floor(`zlast'))))
-gen str80 nota = "ultimo semestre OMI `zl'; ultimo anno uscite `nlast'; ultimo anno migrazione per eta' `nmlast'"
+gen str80 nota = "ultimo semestre OMI `zl'; ultimo anno uscite `nlast'; ultimo anno variazione netta di coorte `nmlast'"
+drop d_ap y_ap s_ap s_ini s_fin quota_anno_apertura
+order tratta percorso apertura sem_apertura quota_sem_apertura primo_sem sem_riferimento ///
+    quota_servita_riferimento sem_dopo zone_trattate g_nil quota_servita_anno_rif anni_dopo_uscite ///
+    anni_uscite anni_dopo_var_coorte nil_trattati nota
 list, noobs sep(0) abbrev(12)
 export delimited using "$TAB/m4_treatment_timing.csv", replace

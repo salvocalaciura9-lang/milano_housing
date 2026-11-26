@@ -20,7 +20,7 @@
 *
 * Solo NIL e solo esiti demografici: per gli affitti il cambio delle zone OMI nel
 * 2014 rende impossibile confrontare prima e dopo il 2012-2015 (modulo 18).
-* Esiti disponibili dal 2008 (ds27: migrazione netta per coorte, composizione,
+* Esiti disponibili dal 2008 (ds27: variazione netta di coorte, composizione,
 * residenti) o dal 2012 (DS205: uscite e ingressi, che richiedono i residenti
 * dell'anno precedente). Per la coorte 2013 le uscite non hanno anni placebo.
 *
@@ -166,7 +166,7 @@ twoway (connected att e if outcome == "r_ac", lcolor("37 106 191") mcolor("37 10
     yline(0, lcolor(gs8)) xline(-0.5, lcolor(gs10) lpattern(dash)) ///
     xtitle("Anni dal primo anno intero di cantieri") ytitle("Differenza NIL esposti - controlli (per 1.000)") ///
     title("M4: residenti durante i cantieri, NIL esposti vs controlli abbinati", size(medsmall)) ///
-    legend(order(1 "uscite verso altri comuni" 2 "migrazione netta 20-29 anni") rows(1) size(small) position(6)) ///
+    legend(order(1 "uscite verso altri comuni" 2 "variazione netta di coorte 20-29 anni") rows(1) size(small) position(6)) ///
     graphregion(color(white)) ///
     note("Callaway e Sant'Anna, base = anno prima dei cantieri. Coorti 2013 (Linate-Forlanini) e 2016 (resto della linea); anni fino al 2021." ///
          "Mostrati gli anni da -8 a +5, in cui contribuiscono entrambe le coorti.", size(vsmall))

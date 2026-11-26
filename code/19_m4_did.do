@@ -48,8 +48,9 @@
 *   periodo e si cancella nel confronto: l'effetto su ln affordability coincide con
 *   quello su ln affitto, e si possono usare anche i semestri del 2025.
 *   NIL, anni 2008-2024: trasferimenti verso altri comuni (r_ac) e ingressi da altri
-*   comuni e dall'estero per 1.000 residenti (dal 2012); dal modulo 03c migrazione
-*   netta per coorte 20-29, 30-39 e 0-9 anni (traslochi dentro Milano compresi),
+*   comuni e dall'estero per 1.000 residenti (dal 2012); dal modulo 03c variazione
+*   netta di coorte 20-29, 30-39 e 0-9 anni (saldo residuo: traslochi dentro Milano,
+*   decessi e rettifiche anagrafiche compresi),
 *   quota di 25-39enni, di stranieri, di stranieri da paesi ad alto reddito, di
 *   famiglie con capofamiglia sotto i 35 anni, ln residenti. Controlli: tutti i NIL
 *   mai esposti, oppure i 3 piu' simili nella composizione 2014 (modulo 20).
@@ -301,7 +302,7 @@ m4run lnP, unit(zid) time(t) cohort(cohort) sample(s_match) step(0.5) tmax($M4_T
 * 4. Stime per NIL (anni): altre dinamiche di gentrificazione
 *------------------------------------------------------------------------------*
 * Esiti per NIL: cancellazioni e iscrizioni (DS205/DS1600/DS1596, 2012-2024) e,
-* dal modulo 03c (ds27, ds1440), composizione e migrazione netta per eta' per
+* dal modulo 03c (ds27, ds1440), composizione e variazione netta di coorte per eta' per
 * coorte (2008-2024), che comprende anche i traslochi dentro Milano.
 * Controlli: (5) tutti i NIL mai esposti + non ancora trattati;
 *            (6) per ogni NIL trattato i 3 NIL mai esposti piu' simili nella

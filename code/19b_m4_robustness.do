@@ -16,9 +16,18 @@
 * C. Definizione del trattamento: raggio di 800 e 1.000 m (invece di 500) e soglia
 *    di esposizione del 10% e del 30% (invece del 20%). Si rilancia il modulo 19 in
 *    versione ridotta (affitti, prezzi, uscite) con questi parametri.
+* D. Classificazione dei periodi di apertura. Il primo periodo trattato e' il
+*    primo semestre (anno, per i NIL) servito per tutto o quasi tutto il periodo;
+*    il periodo di riferimento g-1 pero' e' in parte gia' servito: 2022S2 al 20%
+*    (tratta 1), 2024S2 al 44% (tratta 3); per i NIL il 2022 al 10%, il 2023 al
+*    50%, il 2024 al 22%. Due controlli:
+*      (a) riferimento g-2: il periodo di apertura parziale non entra ne' nella
+*          base ne' negli effetti;
+*      (b) trattamento dal periodo di apertura (zone: 2022S2, 2023S2, 2024S2),
+*          con riferimento al periodo prima.
 *
 * Input:  $WORK/m4_zone_panel.dta, m4_nil_panel.dta (modulo 19); code/m4_programs.do
-* Output: $TAB/m4_power.csv, m4_loo.csv, m4_robustness.csv
+* Output: $TAB/m4_power.csv, m4_loo.csv, m4_robustness.csv, m4_timing_robustness.csv
 *==============================================================================*
 version 16
 di as txt _n "{hline 78}" _n "19b - M4: POTENZA DEL TEST E ROBUSTEZZA" _n "{hline 78}"
@@ -258,3 +267,33 @@ sort outcome variante spec
 di as txt _n "  Robustezza: effetto, p di permutazione, placebo, numero di trattate e controlli"
 list variante spec outcome att p_perm pre p_perm_pre nt nc, noobs sepby(outcome) abbrev(10)
 export delimited using "$TAB/m4_robustness.csv", replace
+
+*--- D. Classificazione dei periodi di apertura --------------------------------*
+di as txt _n "  {ul:D. Periodo di apertura parziale}"
+set seed $SEED
+m4cs_init
+use "$WORK/m4_zone_panel.dta", clear
+foreach y in lnR lnP {
+    m4run `y', unit(zid) time(t) cohort(cohort) sample(s_match) step(0.5) tmax($M4_TLAST) ///
+        spec("`y' (1): riferimento g-2, escluso il semestre di apertura parziale") perms($M4_PERMS) gap(2)
+}
+* (b) trattamento dal semestre in cui la tratta apre
+gen double cohort_o = cohort
+replace cohort_o = 2022.5 if abs(cohort - 2023) < 1e-6
+replace cohort_o = 2024.5 if abs(cohort - 2025) < 1e-6
+foreach y in lnR lnP {
+    m4run `y', unit(zid) time(t) cohort(cohort_o) sample(s_match) step(0.5) tmax($M4_TLAST) ///
+        spec("`y' (1): trattamento dal semestre di apertura (2022S2, 2023S2, 2024S2)") perms($M4_PERMS)
+}
+use "$WORK/m4_nil_panel.dta", clear
+m4run r_ac, unit(nil) time(t) cohort(cohort) sample(s_nilm) step(1) tmax(2024) prewin(8) ///
+    spec("uscite (6): riferimento g-2, escluso l'anno di apertura parziale") perms(`NP') gap(2)
+m4run r_ac, unit(nil) time(t) cohort(cohort) sample(s_nil) step(1) tmax(2024) prewin(8) ///
+    spec("uscite (5): riferimento g-2, escluso l'anno di apertura parziale") perms(`NP') gap(2)
+frame m4cs {
+    gen double att_pct = 100*(exp(att) - 1) if inlist(outcome, "lnR", "lnP")
+    format att ci_lo ci_hi pre %8.4f
+    format att_pct %6.1f
+    list spec outcome att ci_lo ci_hi p_perm pre p_perm_pre nT nC, noobs sep(0) abbrev(10)
+    export delimited using "$TAB/m4_timing_robustness.csv", replace
+}

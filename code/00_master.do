@@ -31,7 +31,7 @@
 *       (ds531), soglia del 30%, NIL 2008-2024
 *   19  Differenza nelle differenze sull'apertura della M4 (stazioni ds535)
 *   20  Tipologia dei NIL per composizione dei residenti (eseguito prima del 19)
-*   03c Composizione dei NIL e migrazione netta per eta' (ds27, ds1440, nascite)
+*   03c Composizione dei NIL e variazione netta di coorte per eta' (ds27, ds1440, nascite)
 *==============================================================================*
 
 version 16
@@ -178,7 +178,7 @@ do "$CODE/01_import_irpef.do"
 do "$CODE/02_import_omi.do"
 do "$CODE/03_import_ds205.do"
 do "$CODE/03b_import_moves.do"     // cancellazioni/iscrizioni per motivo (DS1600/1956/1596/1954)
-do "$CODE/03c_nil_composition.do"  // composizione per eta'/cittadinanza e migrazione netta per coorte (ds27, ds1440, nascite)
+do "$CODE/03c_nil_composition.do"  // composizione per eta'/cittadinanza e variazione netta di coorte (ds27, ds1440, nascite)
 do "$CODE/04_import_ds1960.do"
 do "$CODE/05_import_index.do"
 do "$CODE/06_affordability_native.do"
