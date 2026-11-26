@@ -75,6 +75,7 @@ if "$SEED" == "" global SEED 20261119
 if "$M4_RADIUS" == "" global M4_RADIUS 500   // bacino pedonale; 800 m nella versione iniziale, ora controllo (19b)
 if "$M4_TREAT" == "" global M4_TREAT 0.20
 if "$M4_PERMS" == "" global M4_PERMS 999
+if "$M4_TLAST" == "" global M4_TLAST 2026     // ultimo semestre OMI (2026 = 2026S1)
 if "$SMALL_NIL" == "" global SMALL_NIL 500
 * M4_TAG: suffisso dei file di output (vuoto = versione principale);
 * M4_LIGHT = 1: solo affitti, prezzi e uscite, senza grafici (per i controlli di
@@ -187,7 +188,7 @@ save `zcomp'
 
 use "$WORK/omi_zone21_sem.dta", clear
 gen double t = year + (sem - 1)/2
-keep if inrange(t, 2014.5, 2025.5)     // la zonizzazione 2021 vale dal 2014S2
+keep if inrange(t, 2014.5, $M4_TLAST)  // la zonizzazione 2021 vale dal 2014S2
 gen int tid = round(2*t)
 gen double lnR = ln(R)
 gen double lnP = ln(P)
@@ -274,15 +275,15 @@ di as txt "  (0) TWFE classico, ln affitto: " as res %8.4f _b[D] as txt "  (p cl
     %5.3f 2*ttail(e(df_r), abs(_b[D]/_se[D])) ")"
 frame post m4cs ("(0) TWFE classico, tutte le mai esposte (solo confronto)") ("lnR") (_b[D]) (.) (.) (.) (.) (.)
 
-m4run lnR, unit(zid) time(t) cohort(cohort) sample(s_match) step(0.5) tmax(2025.5) ///
+m4run lnR, unit(zid) time(t) cohort(cohort) sample(s_match) step(0.5) tmax($M4_TLAST) ///
     spec("(1) PRINCIPALE: controlli abbinati + non ancora trattate") perms($M4_PERMS) esframe(es_rent)
-m4run lnR, unit(zid) time(t) cohort(cohort) sample(s_all) step(0.5) tmax(2025.5) ///
+m4run lnR, unit(zid) time(t) cohort(cohort) sample(s_all) step(0.5) tmax($M4_TLAST) ///
     spec("(2) tutte le zone mai esposte + non ancora trattate") perms($M4_PERMS)
 if !$M4_LIGHT {
 m4run lnR, unit(zid) time(t) cohort(cohort) sample(s_nyt) step(0.5) tmax(2024.5) ///
     spec("(3) solo non ancora trattate (zone delle tratte successive)") perms($M4_PERMS)
 }
-m4run lnP, unit(zid) time(t) cohort(cohort) sample(s_match) step(0.5) tmax(2025.5) ///
+m4run lnP, unit(zid) time(t) cohort(cohort) sample(s_match) step(0.5) tmax($M4_TLAST) ///
     spec("(4) prezzi di compravendita, controlli abbinati") perms($M4_PERMS) esframe(es_price)
 
 *------------------------------------------------------------------------------*
@@ -384,7 +385,7 @@ foreach o in rent price {
     frame es_`o' {
         gen double e = round((t - g)/0.5)       // semestri dall'apertura (0 = primo semestre trattato)
         collapse (mean) att [aw = nT], by(e)
-        keep if inrange(e, -12, 5)
+        keep if inrange(e, -12, 6)
         gen str8 outcome = "`o'"
         tempfile e_`o'
         save `e_`o''
@@ -398,7 +399,7 @@ foreach o in rent price {
     local lab = cond("`o'" == "rent", "ln affitto", "ln prezzo")
     twoway (connected att e if outcome == "`o'", lcolor("37 106 191") mcolor("37 106 191") msize(small)), ///
         yline(0, lcolor(gs8)) xline(-0.5, lcolor("230 100 50") lpattern(dash)) ///
-        xlabel(-12(2)5) xtitle("Semestri dall'apertura della propria tratta") ///
+        xlabel(-12(2)6) xtitle("Semestri dall'apertura della propria tratta") ///
         ytitle("Differenza trattate - controlli, `lab'") ///
         title("M4: `lab', zone servite vs controlli abbinati e non ancora trattate", size(medsmall)) ///
         legend(off) graphregion(color(white)) ///

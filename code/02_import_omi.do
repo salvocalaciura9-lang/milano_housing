@@ -40,6 +40,41 @@ foreach v in zona linkzona stato descr_tipologia sup_nl_compr sup_nl_loc fascia 
     capture confirm string variable `v'
     if !_rc quietly replace `v' = upper(ustrtrim(`v'))
 }
+* Semestri successivi al DS1996 del Comune, scaricati dal sito dell'Agenzia delle
+* Entrate (formato "Valori di Mercato": una riga di titolo, decimali con la virgola,
+* senza colonne anno/periodo). File: $RAW/omi_agenzia_AAAAsS_valori.csv
+local agz : dir "$RAW" files "omi_agenzia_*_valori.csv"
+capture confirm string variable periodo
+if _rc tostring periodo, replace
+foreach f of local agz {
+    if !regexm("`f'", "omi_agenzia_([0-9][0-9][0-9][0-9])s([12])_valori") continue
+    local ya = regexs(1)
+    local sa = regexs(2)
+    quietly count if anno == `ya' & ustrtrim(periodo) == "`sa'"
+    if r(N) > 0 continue                       // semestre gia' nel DS1996
+    preserve
+    import delimited using "$RAW/`f'", clear delimiter(";") varnames(2) rowrange(3) ///
+        stringcols(_all) encoding("latin1")
+    rename *, lower
+    keep if upper(ustrtrim(comune_descrizione)) == "MILANO"
+    foreach v in cod_tip compr_min compr_max loc_min loc_max {
+        replace `v' = subinstr(ustrtrim(`v'), ",", ".", .)
+        destring `v', replace
+    }
+    foreach v in zona linkzona stato descr_tipologia sup_nl_compr sup_nl_loc fascia {
+        capture confirm string variable `v'
+        if !_rc replace `v' = upper(ustrtrim(`v'))
+    }
+    gen anno = `ya'
+    gen str2 periodo = "`sa'"
+    keep anno periodo zona linkzona fascia cod_tip descr_tipologia stato compr_min compr_max ///
+        sup_nl_compr loc_min loc_max sup_nl_loc comune_descrizione
+    tempfile agz1
+    save `agz1'
+    restore
+    append using `agz1'
+    di as txt "  aggiunto il semestre `ya'/`sa' dal file dell'Agenzia delle Entrate (`f')"
+}
 gen byte sem = real(substr(ustrtrim(periodo), 1, 1))
 assert inlist(sem, 1, 2)
 gen double t = anno + (sem - 1)/2

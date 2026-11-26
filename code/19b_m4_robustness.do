@@ -33,6 +33,7 @@ if "$SEED" == "" global SEED 20261119
 if "$M4_RADIUS" == "" global M4_RADIUS 500   // bacino pedonale; 800 m nella versione iniziale, ora controllo (19b)
 if "$M4_TREAT" == "" global M4_TREAT 0.20
 if "$M4_PERMS" == "" global M4_PERMS 999
+if "$M4_TLAST" == "" global M4_TLAST 2026     // ultimo semestre OMI (2026 = 2026S1)
 foreach f in "$WORK/m4_zone_panel.dta" "$WORK/m4_nil_panel.dta" {
     capture confirm file "`f'"
     if _rc {
@@ -103,11 +104,11 @@ frame create m4pw str70 spec str12 outcome double att double crit5 double mde80 
 
 di as txt _n "  {ul:A. Potenza del test (effetto minimo rilevabile)}"
 use "$WORK/m4_zone_panel.dta", clear
-m4power lnR, unit(zid) time(t) cohort(cohort) sample(s_match) step(0.5) tmax(2025.5) ///
+m4power lnR, unit(zid) time(t) cohort(cohort) sample(s_match) step(0.5) tmax($M4_TLAST) ///
     perms($M4_PERMS) label("(1) affitti, controlli abbinati + non ancora trattate")
-m4power lnR, unit(zid) time(t) cohort(cohort) sample(s_all) step(0.5) tmax(2025.5) ///
+m4power lnR, unit(zid) time(t) cohort(cohort) sample(s_all) step(0.5) tmax($M4_TLAST) ///
     perms($M4_PERMS) label("(2) affitti, tutte le mai esposte + non ancora trattate")
-m4power lnP, unit(zid) time(t) cohort(cohort) sample(s_match) step(0.5) tmax(2025.5) ///
+m4power lnP, unit(zid) time(t) cohort(cohort) sample(s_match) step(0.5) tmax($M4_TLAST) ///
     perms($M4_PERMS) label("(4) prezzi, controlli abbinati")
 use "$WORK/m4_nil_panel.dta", clear
 local NP = max(199, floor($M4_PERMS/2))
@@ -135,7 +136,7 @@ quietly levelsof zona if cohort > 0 & !missing(cohort) & s_match, local(TZ) clea
 foreach z of local TZ {
     tempvar s
     gen byte `s' = s_match & zona != "`z'"
-    m4run lnR, unit(zid) time(t) cohort(cohort) sample(`s') step(0.5) tmax(2025.5) ///
+    m4run lnR, unit(zid) time(t) cohort(cohort) sample(`s') step(0.5) tmax($M4_TLAST) ///
         spec("affitti (1) senza la zona `z'") perms($M4_PERMS)
     drop `s'
 }
@@ -183,9 +184,9 @@ foreach v in "r800|800 m" "r1000|1.000 m" {
     capture confirm file "$WORK/m4_zone_panel_`tag'.dta"
     if _rc continue
     use "$WORK/m4_zone_panel_`tag'.dta", clear
-    m4power lnR, unit(zid) time(t) cohort(cohort) sample(s_match) step(0.5) tmax(2025.5) ///
+    m4power lnR, unit(zid) time(t) cohort(cohort) sample(s_match) step(0.5) tmax($M4_TLAST) ///
         perms($M4_PERMS) label("(1) affitti, controlli abbinati, raggio `lab'")
-    m4power lnP, unit(zid) time(t) cohort(cohort) sample(s_match) step(0.5) tmax(2025.5) ///
+    m4power lnP, unit(zid) time(t) cohort(cohort) sample(s_match) step(0.5) tmax($M4_TLAST) ///
         perms($M4_PERMS) label("(4) prezzi, controlli abbinati, raggio `lab'")
     use "$WORK/m4_nil_panel_`tag'.dta", clear
     m4power r_ac, unit(nil) time(t) cohort(cohort) sample(s_nilm) step(1) tmax(2024) ///

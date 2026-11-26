@@ -1,36 +1,36 @@
 block,spec,coef,b,se,p,p_boot,N,note
-B. FE: scomposizione,riferimento: log affitto/reddito,lnAR,7.293270209087994,5.791592680663925,.2165040674322077,,175,
-B. FE: scomposizione,log affitto e log reddito insieme,lnR,18.40114530460374,6.710620598264217,.0096659157437244,,175,test b(R) = -b(Y): p = 0.000
-B. FE: scomposizione,log affitto e log reddito insieme,lnY,12.39468195896303,5.224109125265452,.0234624757796084,,175,test b(R) = -b(Y): p = 0.000
-B. FE: scomposizione,solo log affitto,lnR,19.4858313813949,7.30099082032699,.0115784508540881,,175,
-B. FE: scomposizione,solo log reddito,lnY,15.0681540437889,7.468282440767647,.0515793234071023,,175,
-B. FE: scomposizione,log prezzo e log reddito insieme,lnP,5.633729758807847,6.353377880163402,.3814538265653405,,175,test b(P) = -b(Y): p = 0.039
-B. FE: scomposizione,log prezzo e log reddito insieme,lnY,12.90011357903137,7.468145453992482,.0931800112127271,,175,test b(P) = -b(Y): p = 0.039
-B. FE: scomposizione,"log affitto, log prezzo e log reddito insieme",lnR,19.82344261309813,8.252153914126961,.0219046249653442,,175,VIF di lnR (FE inclusi) =  154.8
-B. FE: scomposizione,"log affitto, log prezzo e log reddito insieme",lnP,-2.714019728007685,6.954481570023872,.6987824876754127,,175,VIF di lnR (FE inclusi) =  154.8
-C. FE: robustezza,"xtreg, fe (equivale a LSDV)",lnAR,7.293270209087696,5.176325076975747,.1679255135176282,,175,R2 within = 0.206
-C. FE: robustezza,differenze prime (al posto degli effetti fissi),D_lnAR,4.325560859800063,7.277149188907418,.5561774670380539,,140,
-C. FE: robustezza,+ trend lineare per CAP,lnAR,5.945591273112341,10.74365155248934,.5836071751850977,,175,molto esigente: 5 anni per CAP
-C. FE: robustezza,placebo: uscite in t-1 su log A in t,lnAR,-2.662618819295554,3.219364174503714,.4139681328482324,,175,atteso ~0; un effetto segnala trend comuni o causalita' inversa
-C. FE: robustezza,uscite nello stesso anno t,lnAR,-4.41654320943868,6.774477310821132,.5188239862963973,,175,
-C. FE: robustezza,escluso CAP 20121 (salto contribuenti 2023),lnAR,10.48557427739474,5.49077403930479,.0649005758836217,,170,
-C. FE: robustezza,errori robusti non raggruppati (confronto),lnAR,7.293270209087994,5.399197768173668,.1790172770178158,,175,
-C. FE: robustezza,bootstrap: pressione con reddito 2019 rivalutato,lnAR_base,19.48583138140523,7.300990820329703,.0115784508540761,.0109010901090109,175,
-C. FE: robustezza,bootstrap: esito in t+2,lnAR,22.55607819214651,8.031838019667596,.0081921476487155,.0022002200220022,140,
-C. FE: robustezza,bootstrap: differenza CAP vulnerabili,lnAR_x_vuln,16.21812739822934,6.160127369773952,.0126484505812016,.013001300130013,175,
-C. FE: robustezza,bootstrap: log affitto (con log reddito),lnR,18.40114530460374,6.710620598264217,.0096659157437244,.0102010201020102,175,
-D. CAP variazioni,riferimento: var. log affitto/reddito,G_social_cap,.0909163620938525,.0787639961070963,.2572032088155058,,35,
-D. CAP variazioni,esito: dlnR (componente),G_social_cap,.1494242670824815,.0341974320726435,.0001295863247376,,35,
-D. CAP variazioni,esito: dlnY (componente),G_social_cap,.0585079049886293,.0674075213016471,.3920789974564278,,35,
-D. CAP variazioni,esito: dlnP (componente),G_social_cap,.1357945636514436,.0357716037379353,.0006415483715649,,35,
-D. CAP variazioni,esito: dlnYl (componente),G_social_cap,-.0176867007426659,.0376273699408666,.6416102173295952,,35,
-D. CAP variazioni,+ livelli 2019: lnY0,G_social_cap,-.0636409549330213,.0998740226417467,.5288198730341189,,35,VIF massimo =   5.0
-D. CAP variazioni,+ livelli 2019: lnR0,G_social_cap,-.1250589872699095,.0886544315664527,.1686381721675315,,35,VIF massimo =   4.8
-D. CAP variazioni,+ livelli 2019: lnY0 lnR0,G_social_cap,-.11040015512598,.0886628321140661,.223037788750573,,35,VIF massimo =  13.0
-D. CAP variazioni,+ livelli 2019: lnY0 lnP0,G_social_cap,-.1067818075394414,.0903026765647602,.2466170119613268,,35,VIF massimo =  12.1
-D. CAP variazioni,+ effetti fissi di fascia OMI,G_social_cap,-.0525431590411077,.1072172952848462,.6279078761253889,,35,
-D. CAP variazioni,regressione robusta (rreg),G_social_cap,.1481217929936423,.0422946196210792,.0014248354405179,,35,
-D. CAP variazioni,"errore spaziale (contiguita' CAP, GS2SLS)",G_social_cap,.0984282600174904,.0381007167788931,.0097840247802414,,35,Moran sui residui OLS: p = 0.669
+B. FE: scomposizione,riferimento: log affitto/reddito,lnAR,7.293270209088021,5.79159268066394,.2165040674322072,,175,
+B. FE: scomposizione,log affitto e log reddito insieme,lnR,18.40114530460331,6.710620598263814,.009665915743722,,175,test b(R) = -b(Y): p = 0.000
+B. FE: scomposizione,log affitto e log reddito insieme,lnY,12.39468195896416,5.224109125265145,.0234624757795891,,175,test b(R) = -b(Y): p = 0.000
+B. FE: scomposizione,solo log affitto,lnR,19.48583138139401,7.300990820326741,.0115784508540889,,175,
+B. FE: scomposizione,solo log reddito,lnY,15.06815404378876,7.468282440767728,.0515793234071069,,175,
+B. FE: scomposizione,log prezzo e log reddito insieme,lnP,5.633729758808294,6.353377880163396,.3814538265653029,,175,test b(P) = -b(Y): p = 0.039
+B. FE: scomposizione,log prezzo e log reddito insieme,lnY,12.90011357903218,7.468145453992403,.0931800112127039,,175,test b(P) = -b(Y): p = 0.039
+B. FE: scomposizione,"log affitto, log prezzo e log reddito insieme",lnR,19.8234426130958,8.252153914126476,.0219046249653514,,175,VIF di lnR (FE inclusi) =  154.8
+B. FE: scomposizione,"log affitto, log prezzo e log reddito insieme",lnP,-2.714019728006389,6.954481570023383,.6987824876755291,,175,VIF di lnR (FE inclusi) =  154.8
+C. FE: robustezza,"xtreg, fe (equivale a LSDV)",lnAR,7.293270209087665,5.176325076976017,.1679255135176515,,175,R2 within = 0.206
+C. FE: robustezza,differenze prime (al posto degli effetti fissi),D_lnAR,4.325560859800027,7.27714918890742,.5561774670380573,,140,
+C. FE: robustezza,+ trend lineare per CAP,lnAR,5.94559128652058,10.74365154973727,.5836071742442076,,175,molto esigente: 5 anni per CAP
+C. FE: robustezza,placebo: uscite in t-1 su log A in t,lnAR,-2.662618819295604,3.219364174503721,.4139681328482249,,175,atteso ~0; un effetto segnala trend comuni o causalita' inversa
+C. FE: robustezza,uscite nello stesso anno t,lnAR,-4.416543209437492,6.774477310821157,.5188239862965105,,175,
+C. FE: robustezza,escluso CAP 20121 (salto contribuenti 2023),lnAR,10.48557427739484,5.490774039304812,.0649005758836201,,170,
+C. FE: robustezza,errori robusti non raggruppati (confronto),lnAR,7.293270209088021,5.399197768178379,.179017277018191,,175,
+C. FE: robustezza,bootstrap: pressione con reddito 2019 rivalutato,lnAR_base,19.48583138140503,7.300990820329552,.0115784508540753,.0109010901090109,175,
+C. FE: robustezza,bootstrap: esito in t+2,lnAR,22.55607819214625,8.031838019667395,.0081921476487147,.0022002200220022,140,
+C. FE: robustezza,bootstrap: differenza CAP vulnerabili,lnAR_x_vuln,16.21812739823121,6.160127369773585,.0126484505811875,.013001300130013,175,
+C. FE: robustezza,bootstrap: log affitto (con log reddito),lnR,18.40114530460331,6.710620598263814,.009665915743722,.0102010201020102,175,
+D. CAP variazioni,riferimento: var. log affitto/reddito,G_social_cap,.0909163620938526,.0787639961070972,.2572032088155102,,35,
+D. CAP variazioni,esito: dlnR (componente),G_social_cap,.1494242670824819,.0341974320726457,.0001295863247377,,35,
+D. CAP variazioni,esito: dlnY (componente),G_social_cap,.0585079049886292,.0674075213016437,.3920789974564041,,35,
+D. CAP variazioni,esito: dlnP (componente),G_social_cap,.1357945636514432,.035771603737938,.0006415483715654,,35,
+D. CAP variazioni,esito: dlnYl (componente),G_social_cap,-.0176867007426659,.0376273699408668,.6416102173295961,,35,
+D. CAP variazioni,+ livelli 2019: lnY0,G_social_cap,-.0636409549330212,.099874022641767,.5288198730342031,,35,VIF massimo =   5.0
+D. CAP variazioni,+ livelli 2019: lnR0,G_social_cap,-.1250589872699092,.0886544315664632,.1686381721675818,,35,VIF massimo =   4.8
+D. CAP variazioni,+ livelli 2019: lnY0 lnR0,G_social_cap,-.1104001551259798,.088662832114098,.2230377887507366,,35,VIF massimo =  13.0
+D. CAP variazioni,+ livelli 2019: lnY0 lnP0,G_social_cap,-.1067818075394411,.0903026765647677,.2466170119613668,,35,VIF massimo =  12.1
+D. CAP variazioni,+ effetti fissi di fascia OMI,G_social_cap,-.0525431590411068,.1072172952848406,.6279078761253765,,35,
+D. CAP variazioni,regressione robusta (rreg),G_social_cap,.1481217929936414,.0422946196210792,.001424835440518,,35,
+D. CAP variazioni,"errore spaziale (contiguita' CAP, GS2SLS)",G_social_cap,.0984282600164263,.038100716778456,.0097840247801929,,35,Moran sui residui OLS: p = 0.669
 E. NIL,riferimento,G_social,-1.024237183505267,2.865086662343178,.7217297375698386,,80,
 E. NIL,inclusi NIL < 500 residenti 2019,G_social,.1159325644140308,1.70817328091885,.9460548782855673,,87,
 E. NIL,esclusi NIL influenti (dfbeta),G_social,3.190863770387915,.9376096929695366,.0011281071377463,,72,8 NIL esclusi

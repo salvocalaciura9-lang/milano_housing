@@ -1,34 +1,34 @@
 variante,spec,outcome,att,att_pct,p_perm,pre,p_perm_pre,nt,nc
-"principale (500 m, 20%)","(4) prezzi di compravendita, controlli abbinati",lnP,-.024826536,-2.452089209499164,.37799999,-.0099527417,.82499999,5,6
-raggio 1.000 m,"(4) prezzi di compravendita, controlli abbinati",lnP,-.041129053,-4.029473054198373,.35800001,-.037469622,.34999999,4,8
-raggio 800 m,"(4) prezzi di compravendita, controlli abbinati",lnP,-.02543268,-2.511199358986549,.472,-.044009581,.27599999,3,6
-soglia 10%,"(4) prezzi di compravendita, controlli abbinati",lnP,-.018908838,-1.873118722071343,.34200001,.0057417322,.838,10,10
-soglia 30%,"(4) prezzi di compravendita, controlli abbinati",lnP,-.036379017,-3.572525224669942,.28999999,-.053546868,.366,2,5
-"principale (500 m, 20%)",(1) PRINCIPALE: controlli abbinati + non ancora trattate,lnR,-.035227284,-3.461402530622948,.23,.02823915,.56999999,5,6
-"principale (500 m, 20%)",(2) tutte le zone mai esposte + non ancora trattate,lnR,-.03076582,-3.02973688347361,.396,.051872071,.204,5,20
-raggio 1.000 m,(1) PRINCIPALE: controlli abbinati + non ancora trattate,lnR,-.012717578,-1.263705096791357,.85000002,.013252249,.81800002,4,8
-raggio 1.000 m,(2) tutte le zone mai esposte + non ancora trattate,lnR,-.0062245317,-.6205199415255547,.90200001,.023603551,.65399998,4,16
-raggio 800 m,(1) PRINCIPALE: controlli abbinati + non ancora trattate,lnR,-.047711875,-4.659155195979093,.428,.0072096847,.90399998,3,6
-raggio 800 m,(2) tutte le zone mai esposte + non ancora trattate,lnR,-.05741312,-5.579608057308938,.27000001,.017876782,.75199997,3,16
-senza un'area trattata,affitti (1) senza la zona B13,lnR,-.038075343,-3.735958984034193,.175,.00028008537,.995,4,6
-senza un'area trattata,affitti (1) senza la zona B20,lnR,-.02864938,-2.824287819382065,.35699999,.013803576,.829,4,6
-senza un'area trattata,affitti (1) senza la zona B21,lnR,-.035967406,-3.532826440824832,.30399999,.02698428,.611,4,6
-senza un'area trattata,affitti (1) senza la zona D12,lnR,-.048687562,-4.752132658407559,.050000001,.044126701,.47499999,4,6
-senza un'area trattata,affitti (1) senza la zona D24,lnR,-.032457545,-3.193645229008102,.29699999,.057092641,.228,4,6
-soglia 10%,(1) PRINCIPALE: controlli abbinati + non ancora trattate,lnR,-.037169442,-3.648713762566658,.11,.029937951,.36199999,10,10
-soglia 10%,(2) tutte le zone mai esposte + non ancora trattate,lnR,-.034700844,-3.410567429810596,.122,.056867339,.078000002,10,20
-soglia 30%,(1) PRINCIPALE: controlli abbinati + non ancora trattate,lnR,-.026888574,-2.653029423761588,.46000001,.0014477761,.92000002,2,5
-soglia 30%,(2) tutte le zone mai esposte + non ancora trattate,lnR,-.028516959,-2.811418859287518,.72000003,.062951475,.31600001,2,20
-"principale (500 m, 20%)",(5) NIL: mai esposti + non ancora trattati,r_ac,-2.0340436,,.27000001,-.26036754,.82999998,8,60
-"principale (500 m, 20%)",(6) NIL: abbinati per composizione + non ancora trattati,r_ac,-2.3877382,,.061999999,-1.1850162,.12800001,8,14
-raggio 1.000 m,(5) NIL: mai esposti + non ancora trattati,r_ac,-1.7162975,,.336,-.28334549,.86400002,8,54
-raggio 1.000 m,(6) NIL: abbinati per composizione + non ancora trattati,r_ac,-2.5842071,,.059999999,-.41560578,.75599998,8,19
-raggio 800 m,(5) NIL: mai esposti + non ancora trattati,r_ac,-3.2312515,,.1,-.3814981,.75999999,12,57
-raggio 800 m,(6) NIL: abbinati per composizione + non ancora trattati,r_ac,-3.5072594,,.0080000004,-1.1826396,.296,12,21
-senza un'area trattata,uscite (6) senza il NIL 22 ,r_ac,-1.805251,,.23999999,-1.0473658,.204,7,14
-senza un'area trattata,uscite (6) senza il NIL 25 ,r_ac,-2.3431056,,.12800001,-1.1205089,.234,7,14
-senza un'area trattata,uscite (6) senza il NIL 26 ,r_ac,-3.0148578,,.029999999,-1.2395339,.17399999,7,14
-soglia 10%,(5) NIL: mai esposti + non ancora trattati,r_ac,-3.2979341,,.079999998,-.47297898,.72799999,12,60
-soglia 10%,(6) NIL: abbinati per composizione + non ancora trattati,r_ac,-3.5588548,,.012,-1.181478,.264,12,21
-soglia 30%,(5) NIL: mai esposti + non ancora trattati,r_ac,-2.0943847,,.36399999,.40185457,.83600003,5,60
-soglia 30%,(6) NIL: abbinati per composizione + non ancora trattati,r_ac,-2.1550469,,.228,-.63216764,.5,5,12
+"principale (500 m, 20%)","(4) prezzi di compravendita, controlli abbinati",lnP,-.031414319,-3.092601571026354,.27399999,-.0099527417,.82200003,5,6
+raggio 1.000 m,"(4) prezzi di compravendita, controlli abbinati",lnP,-.039110616,-3.835566984161831,.36199999,-.037469622,.35800001,4,8
+raggio 800 m,"(4) prezzi di compravendita, controlli abbinati",lnP,-.023741094,-2.346149167618838,.52999997,-.044009581,.31600001,3,6
+soglia 10%,"(4) prezzi di compravendita, controlli abbinati",lnP,-.022732476,-2.247603986161495,.236,.0057417322,.83200002,10,10
+soglia 30%,"(4) prezzi di compravendita, controlli abbinati",lnP,-.0483092,-4.7160875867168,.184,-.053546868,.354,2,5
+"principale (500 m, 20%)",(1) PRINCIPALE: controlli abbinati + non ancora trattate,lnR,-.046644498,-4.557336181303617,.133,.02823915,.52499998,5,6
+"principale (500 m, 20%)",(2) tutte le zone mai esposte + non ancora trattate,lnR,-.040657569,-3.984213825668403,.229,.051872071,.21600001,5,20
+raggio 1.000 m,(1) PRINCIPALE: controlli abbinati + non ancora trattate,lnR,-.013481975,-1.339149983141164,.80199999,.013252249,.764,4,8
+raggio 1.000 m,(2) tutte le zone mai esposte + non ancora trattate,lnR,-.0064397925,-.6419101433643104,.88999999,.023603551,.57599998,4,16
+raggio 800 m,(1) PRINCIPALE: controlli abbinati + non ancora trattate,lnR,-.053460121,-5.20562568481493,.37799999,.0072096847,.90200001,3,6
+raggio 800 m,(2) tutte le zone mai esposte + non ancora trattate,lnR,-.060704481,-5.889868786030483,.226,.017876782,.736,3,16
+senza un'area trattata,affitti (1) senza la zona B13,lnR,-.052642222,-5.128061777617865,.102,.00028008537,.99900001,4,6
+senza un'area trattata,affitti (1) senza la zona B20,lnR,-.036170896,-3.552454573655206,.27599999,.013803576,.83200002,4,6
+senza un'area trattata,affitti (1) senza la zona B21,lnR,-.047655296,-4.653760686110752,.18700001,.02698428,.60900003,4,6
+senza un'area trattata,affitti (1) senza la zona D12,lnR,-.057472136,-5.58518021135288,.052999999,.044126701,.49399999,4,6
+senza un'area trattata,affitti (1) senza la zona D24,lnR,-.044399407,-4.342818008822491,.207,.057092641,.23,4,6
+soglia 10%,(1) PRINCIPALE: controlli abbinati + non ancora trattate,lnR,-.047281135,-4.618079194909852,.032000002,.029937951,.33399999,10,10
+soglia 10%,(2) tutte le zone mai esposte + non ancora trattate,lnR,-.041870989,-4.100650660758198,.048,.056867339,.059999999,10,20
+soglia 30%,(1) PRINCIPALE: controlli abbinati + non ancora trattate,lnR,-.043401815,-4.247343577590811,.34400001,.0014477761,.92199999,2,5
+soglia 30%,(2) tutte le zone mai esposte + non ancora trattate,lnR,-.04550866,-4.448867255131505,.54000002,.062951475,.294,2,20
+"principale (500 m, 20%)",(5) NIL: mai esposti + non ancora trattati,r_ac,-2.0340436,,.294,-.26036754,.852,8,60
+"principale (500 m, 20%)",(6) NIL: abbinati per composizione + non ancora trattati,r_ac,-2.3877382,,.071999997,-1.1850162,.16,8,14
+raggio 1.000 m,(5) NIL: mai esposti + non ancora trattati,r_ac,-1.7162975,,.27599999,-.28334549,.89999998,8,54
+raggio 1.000 m,(6) NIL: abbinati per composizione + non ancora trattati,r_ac,-2.5842071,,.064000003,-.41560578,.72000003,8,19
+raggio 800 m,(5) NIL: mai esposti + non ancora trattati,r_ac,-3.2312515,,.083999999,-.3814981,.80000001,12,57
+raggio 800 m,(6) NIL: abbinati per composizione + non ancora trattati,r_ac,-3.5072594,,.0080000004,-1.1826396,.25999999,12,21
+senza un'area trattata,uscite (6) senza il NIL 22 ,r_ac,-1.805251,,.222,-1.0473658,.18799999,7,14
+senza un'area trattata,uscite (6) senza il NIL 25 ,r_ac,-2.3431056,,.126,-1.1205089,.18799999,7,14
+senza un'area trattata,uscite (6) senza il NIL 26 ,r_ac,-3.0148578,,.037999999,-1.2395339,.146,7,14
+soglia 10%,(5) NIL: mai esposti + non ancora trattati,r_ac,-3.2979341,,.044,-.47297898,.72399998,12,60
+soglia 10%,(6) NIL: abbinati per composizione + non ancora trattati,r_ac,-3.5588548,,.0040000002,-1.181478,.22400001,12,21
+soglia 30%,(5) NIL: mai esposti + non ancora trattati,r_ac,-2.0943847,,.324,.40185457,.80800003,5,60
+soglia 30%,(6) NIL: abbinati per composizione + non ancora trattati,r_ac,-2.1550469,,.204,-.63216764,.588,5,12

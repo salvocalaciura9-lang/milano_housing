@@ -41,6 +41,7 @@ foreach g in RAW:data/raw WORK:data/work TAB:output/tables FIG:output/figures CO
 }
 if "$SEED" == "" global SEED 20261119
 if "$M4_PERMS" == "" global M4_PERMS 999
+if "$M4_TLAST" == "" global M4_TLAST 2026     // ultimo semestre OMI (2026 = 2026S1)
 foreach f in "$WORK/m4_zone_panel.dta" "$WORK/m4_nil_panel.dta" {
     capture confirm file "`f'"
     if _rc {
@@ -205,9 +206,9 @@ gen str4 livello = "zona"
 tempfile uz
 save `uz'
 restore
-m4dose lnR, unit(zid) time(t) cohort(cohort_d) dose(dose) sample(s_dose) step(0.5) tmax(2025.5) ///
+m4dose lnR, unit(zid) time(t) cohort(cohort_d) dose(dose) sample(s_dose) step(0.5) tmax($M4_TLAST) ///
     spec("zone: affitti, esposizione continua") perms($M4_PERMS)
-m4dose lnP, unit(zid) time(t) cohort(cohort_d) dose(dose) sample(s_dose) step(0.5) tmax(2025.5) ///
+m4dose lnP, unit(zid) time(t) cohort(cohort_d) dose(dose) sample(s_dose) step(0.5) tmax($M4_TLAST) ///
     spec("zone: prezzi, esposizione continua") perms($M4_PERMS)
 
 *--- 2. NIL: uscite e ingressi ------------------------------------------------------*

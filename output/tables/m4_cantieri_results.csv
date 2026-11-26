@@ -1,25 +1,25 @@
 spec,outcome,att,p_perm,pre,p_perm_pre,nT,nC
-"(a) solo lavori (fino al 2021), abbinati",r_ac,.3888719940502086,.788,1.206831995819658,.178,8,14
-"(b) lavori + apertura (fino al 2024), abbinati",r_ac,.3688160117939559,.792,1.206831995819658,.162,8,14
-"(c) solo lavori (fino al 2021), tutti i mai esposti",r_ac,.4899581247516125,.762,.3358491567285753,.8120000000000001,8,60
-"(a) solo lavori (fino al 2021), abbinati",r_in,.2496749313728949,.864,1.117357352469534,.5679999999999999,8,14
-"(b) lavori + apertura (fino al 2024), abbinati",r_in,.9165167231869642,.6,1.117357352469534,.546,8,14
-"(c) solo lavori (fino al 2021), tutti i mai esposti",r_in,3.395813652365859,.412,-3.627034545570277,.416,8,60
-"(a) solo lavori (fino al 2021), abbinati",nm_c0009,.7267109939421377,.91,.7978147768240516,.9,8,14
-"(b) lavori + apertura (fino al 2024), abbinati",nm_c0009,2.111313810043496,.6860000000000001,.7978147768240512,.88,8,14
-"(c) solo lavori (fino al 2021), tutti i mai esposti",nm_c0009,.3940096601388898,.976,3.283988921047947,.806,8,60
-"(a) solo lavori (fino al 2021), abbinati",nm_c2029,4.45443109127561,.5679999999999999,9.501306446112363,.354,8,14
-"(b) lavori + apertura (fino al 2024), abbinati",nm_c2029,7.564473571906813,.332,9.501306446112366,.336,8,14
-"(c) solo lavori (fino al 2021), tutti i mai esposti",nm_c2029,-2.05009819635808,.898,-4.246377629157788,.858,8,60
-"(a) solo lavori (fino al 2021), abbinati",nm_c3039,-.6360719298548213,.9379999999999999,2.455366621552074,.796,8,14
-"(b) lavori + apertura (fino al 2024), abbinati",nm_c3039,1.71690873041672,.856,2.455366621552071,.804,8,14
-"(c) solo lavori (fino al 2021), tutti i mai esposti",nm_c3039,2.054954578996909,.922,3.203926275658825,.8159999999999999,8,60
-"(a) solo lavori (fino al 2021), abbinati",sh_g2539,-.001165449415112,.718,-.0000349765838683,.988,8,14
-"(b) lavori + apertura (fino al 2024), abbinati",sh_g2539,-.0006479994712821,.8139999999999999,-.0000349765838683,.988,8,14
-"(c) solo lavori (fino al 2021), tutti i mai esposti",sh_g2539,.0071506016264913,.204,-.0031516643767029,.38,8,60
-"(a) solo lavori (fino al 2021), abbinati",sh_for27,-.0022836671759959,.426,.0042853440046635,.248,8,14
-"(b) lavori + apertura (fino al 2024), abbinati",sh_for27,-.0016120371077188,.646,.0042853440046635,.188,8,14
-"(c) solo lavori (fino al 2021), tutti i mai esposti",sh_for27,-.0064721675143378,.348,.0088051789472299,.138,8,60
-"(a) solo lavori (fino al 2021), abbinati",lnpop,-.0128353395588396,.212,.0057226916180967,.264,8,14
-"(b) lavori + apertura (fino al 2024), abbinati",lnpop,-.015300495285225,.202,.0057226916180967,.228,8,14
-"(c) solo lavori (fino al 2021), tutti i mai esposti",lnpop,-.0262359435254923,.276,.0233801259185747,.288,8,60
+"(a) solo lavori (fino al 2021), abbinati",r_ac,.3888719940502086,.764,1.206831995819658,.148,8,14
+"(b) lavori + apertura (fino al 2024), abbinati",r_ac,.3688160117939564,.8139999999999999,1.206831995819658,.206,8,14
+"(c) solo lavori (fino al 2021), tutti i mai esposti",r_ac,.4899581247516127,.732,.3358491567285754,.822,8,60
+"(a) solo lavori (fino al 2021), abbinati",r_in,.2496749313728947,.862,1.117357352469534,.572,8,14
+"(b) lavori + apertura (fino al 2024), abbinati",r_in,.9165167231869642,.5600000000000001,1.117357352469534,.57,8,14
+"(c) solo lavori (fino al 2021), tutti i mai esposti",r_in,3.395813652365859,.454,-3.627034545570276,.446,8,60
+"(a) solo lavori (fino al 2021), abbinati",nm_c0009,.7267109939421399,.916,.7978147768240516,.892,8,14
+"(b) lavori + apertura (fino al 2024), abbinati",nm_c0009,2.111313810043494,.646,.7978147768240507,.906,8,14
+"(c) solo lavori (fino al 2021), tutti i mai esposti",nm_c0009,.3940096601388898,.982,3.283988921047947,.854,8,60
+"(a) solo lavori (fino al 2021), abbinati",nm_c2029,4.454431091275614,.508,9.501306446112366,.326,8,14
+"(b) lavori + apertura (fino al 2024), abbinati",nm_c2029,7.56447357190681,.354,9.501306446112363,.344,8,14
+"(c) solo lavori (fino al 2021), tutti i mai esposti",nm_c2029,-2.050098196358082,.886,-4.246377629157784,.854,8,60
+"(a) solo lavori (fino al 2021), abbinati",nm_c3039,-.6360719298548213,.952,2.45536662155207,.8120000000000001,8,14
+"(b) lavori + apertura (fino al 2024), abbinati",nm_c3039,1.716908730416721,.834,2.45536662155207,.798,8,14
+"(c) solo lavori (fino al 2021), tutti i mai esposti",nm_c3039,2.054954578996912,.904,3.203926275658828,.84,8,60
+"(a) solo lavori (fino al 2021), abbinati",sh_g2539,-.001165449415112,.674,-.0000349765838683,.98,8,14
+"(b) lavori + apertura (fino al 2024), abbinati",sh_g2539,-.0006479994712821,.838,-.0000349765838683,.988,8,14
+"(c) solo lavori (fino al 2021), tutti i mai esposti",sh_g2539,.0071506016264913,.22,-.0031516643767029,.43,8,60
+"(a) solo lavori (fino al 2021), abbinati",sh_for27,-.0022836671759959,.412,.0042853440046635,.218,8,14
+"(b) lavori + apertura (fino al 2024), abbinati",sh_for27,-.0016120371077188,.646,.0042853440046635,.234,8,14
+"(c) solo lavori (fino al 2021), tutti i mai esposti",sh_for27,-.0064721675143378,.336,.0088051789472299,.134,8,60
+"(a) solo lavori (fino al 2021), abbinati",lnpop,-.0128353395588396,.216,.0057226916180967,.258,8,14
+"(b) lavori + apertura (fino al 2024), abbinati",lnpop,-.015300495285225,.196,.0057226916180967,.228,8,14
+"(c) solo lavori (fino al 2021), tutti i mai esposti",lnpop,-.0262359435254923,.264,.0233801259185747,.25,8,60
