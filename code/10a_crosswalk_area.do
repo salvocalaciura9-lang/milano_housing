@@ -8,7 +8,6 @@
 * Input in $GEO:
 *   CAPZONE_Milano.shp/.dbf        CAP (Poste Italiane, demo), WGS84, 38 CAP
 *   omi2025_coords.csv/_attr.csv   zone OMI 2025-2 (da aux_geo_to_stata.py)
-*   omi2011_coords.csv/_attr.csv   zone OMI 2011-1 (facoltativo, confronto)
 *   nilnew_coords.csv/_attr.csv    NIL VIGENTI (DS964, Milano 2030) = geografia del DS205
 *   nilold_coords.csv/_attr.csv    NIL PGT 2012 = geografia del file dell'indice
 *                                  (in mancanza: nil_wkt, geometrie WKT dell'indice)
@@ -23,10 +22,9 @@
 *   xw_nil_cap.csv       nil, cap, w  (quota della superficie del NIL in ogni CAP)
 *   xw_omi_cap.csv       zona, cap, w (quota della superficie del CAP in ogni zona)
 *   xw_nil_omi_area.csv  nil, zona, w (quota del NIL in ogni zona OMI 2019-23)
-*   xw_nil_omi2011_area.csv  idem con le zone OMI 2011
 *   xw_nilold_nilnew.csv nil_old, nil, w (quota della superficie del NIL vigente
 *                        che proviene da ciascun NIL vecchio; somma 1 per NIL vigente)
-* Output in $TAB: omi_zone_2011_vs_2021.csv (sovrapposizione delle zonizzazioni)
+* Le zone OMI 2004-2013 (55, altri confini) non si usano.
 *
 * NB: pesi di superficie, non di popolazione: parchi e aree non residenziali
 * pesano come le aree abitate. Le quantita' allocate sono stime.
@@ -81,7 +79,7 @@ save "$WORK/xwa_cap_ids.dta", replace
 local oldsrc "nilold"
 capture confirm file "$GEO/nilold_coords.csv"
 if _rc local oldsrc "nil_wkt"
-foreach s in omi2025 omi2011 nilnew `oldsrc' {
+foreach s in omi2025 nilnew `oldsrc' {
     capture confirm file "$GEO/`s'_coords.csv"
     if _rc continue
     import delimited using "$GEO/`s'_coords.csv", varnames(1) case(preserve) clear
@@ -139,11 +137,6 @@ if !_rc {
 }
 else gen int nil_old = .
 xwa_assign "$WORK/xwa_omi2025_shp.dta" "$WORK/xwa_omi2025_ids.dta" code zona25
-capture confirm file "$WORK/xwa_omi2011_shp.dta"
-if !_rc {
-    xwa_assign "$WORK/xwa_omi2011_shp.dta" "$WORK/xwa_omi2011_ids.dta" code zona11
-}
-else gen str3 zona11 = ""
 
 * revisione 2024 delle zone: ritorno ai codici 2019-2023
 gen str8 zona = zona25
@@ -273,37 +266,14 @@ keep zona cap w n
 export delimited using "$AUX/xw_omi_cap.csv", replace
 restore
 
-* NIL -> zone OMI (2019-23 e 2011): per portare le quotazioni ai NIL
-foreach z in zona zona11 {
-    preserve
-    drop if missing(nil) | `z' == ""
-    contract nil `z', freq(n)
-    bysort nil: egen double tot = total(n)
-    gen double w = n/tot
-    keep nil `z' w n
-    local out = cond("`z'" == "zona", "xw_nil_omi_area.csv", "xw_nil_omi2011_area.csv")
-    if _N > 0 export delimited using "$AUX/`out'", replace
-    restore
-}
-
-* confronto delle zonizzazioni OMI 2011 e 2019-23
+* NIL -> zone OMI 2019-23: per portare le quotazioni ai NIL
 preserve
-drop if zona11 == "" | zona == ""
-contract zona11 zona, freq(n)
-bysort zona11: egen double tot11 = total(n)
-bysort zona:   egen double tot21 = total(n)
-gen double sh_of_2011 = n/tot11
-gen double sh_of_2021 = n/tot21
-label variable sh_of_2011 "Quota della zona 2011 che cade nella zona 2019-23"
-label variable sh_of_2021 "Quota della zona 2019-23 che cade nella zona 2011"
-gsort zona11 -n
-if _N > 0 {
-    export delimited zona11 zona n sh_of_2011 sh_of_2021 using "$TAB/omi_zone_2011_vs_2021.csv", replace
-    bysort zona11: egen double maxsh = max(sh_of_2011)
-    egen byte tg = tag(zona11)
-    di as txt "  zone 2011: quota massima finita in una sola zona 2019-23"
-    summarize maxsh if tg, detail
-}
+drop if missing(nil) | zona == ""
+contract nil zona, freq(n)
+bysort nil: egen double tot = total(n)
+gen double w = n/tot
+keep nil zona w n
+export delimited using "$AUX/xw_nil_omi_area.csv", replace
 restore
 
 di as txt "  Raccordi di superficie scritti in $AUX"

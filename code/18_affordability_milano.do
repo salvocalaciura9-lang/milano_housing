@@ -2,8 +2,8 @@
 * 18_affordability_milano.do
 * Evoluzione dell'affordability degli affitti a Milano per il "cittadino tipico"
 *
-* Indice principale (2014-2024: solo anni con la zonizzazione OMI attuale;
-* il 2004-2013 resta in una serie lunga separata, vedi sezione 3):
+* Indice (2014-2024: solo anni con la zonizzazione OMI attuale; le quotazioni
+* 2004-2013, su 55 zone con altri confini, non si usano):
 *   A_it = 12 x S x affitto OMI_it (EUR/m2/mese, punto medio) / reddito NETTO mediano_t
 *   quartiere "fuori portata" se A_it > 0,40: soglia OCSE/Eurostat di sovraccarico
 *   (OECD Affordable Housing Database, HC1.2.3: affitto o mutuo > 40% del reddito
@@ -11,7 +11,7 @@
 *   (netinc_program.do), detrazioni da lavoro dipendente; altri scenari, controllo
 *   con le imposte vere e scenario calibrato nel modulo 18b.
 *   La prima versione usava il 30% del reddito lordo (regola HUD): resta come
-*   controllo (A60g, 2004-2024).
+*   controllo (A60g).
 *
 * Scenari (S = superficie, reddito al denominatore):
 *   A60  : 60 m2, un reddito netto mediano     (indice principale, soglia 40%)
@@ -28,27 +28,25 @@
 *     (ipotesi: contribuenti distribuiti uniformemente nella classe).
 *     Per confronto si calcola anche il reddito medio (ammontare / contribuenti).
 *   - Affitti: OMI DS1996, abitazioni civili stato normale, punto medio, per
-*     zona e semestre. La zonizzazione OMI cambia nel 2014 (55 -> 38 zone) e nel
-*     secondo semestre 2024 (D15 e D30 divise): ogni semestre si collega alla
-*     griglia con la zonizzazione in vigore (zona11 fino al 2013, zona 2014S2-2024S1,
-*     zona25 dal 2024S2; il 2014S1, di transizione, e' escluso) e si porta sui NIL
-*     e sulle zone OMI 2021 con pesi di
+*     zona e semestre, dal 2014S2. La zonizzazione OMI cambia nel 2014 (55 -> 38
+*     zone): i semestri fino al 2014S1 (di transizione) non si usano. Nel secondo
+*     semestre 2024 D15 e D30 vengono divise: ogni semestre si collega alla
+*     griglia con la zonizzazione in vigore (zona 2014S2-2024S1, zona25 dal
+*     2024S2) e si porta sui NIL e sulle zone OMI 2021 con pesi di
 *     superficie (punti della griglia di ~28 m, modulo 10a).
-*   - Residenti: DS205 (2011-2024); per il 2004-2010 si usano i residenti 2011.
+*   - Residenti: DS205 (2011-2024).
 *   - Esclusi i NIL con meno di $SMALL_NIL residenti nel 2019 (parchi, scali).
 *
 * Output
 *   $WORK/milano_income.dta         reddito mediano lordo e netto, 2004-2024, e medio
 *   $WORK/milano_income_classes.dta classi di reddito per anno (per il modulo 18b)
-*   $WORK/omi_nil_year_long.dta     affitto OMI per NIL e anno, 2004-2025
+*   $WORK/omi_nil_year.dta          affitto OMI per NIL e anno, 2014-2025
 *   $WORK/omi_zone21_year.dta       affitto OMI per zona (zonizzazione 2021), 2014-2025
 *   $WORK/omi_zone21_sem.dta, omi_nil_sem.dta  affitti e prezzi per semestre (per il modulo 19)
 *   $WORK/aff_nil_year.dta          indice per NIL e anno
 *   $TAB/aff_city_year.csv          2014-2024: reddito, quota di NIL e di residenti oltre la soglia
-*   $TAB/aff_city_year_long.csv     serie lunga 2004-2024 (cambio di zonizzazione nel 2014)
-*   $TAB/aff_nil_year.csv           pannello NIL x anno (flag balanced, balanced_long, omi_old)
+*   $TAB/aff_nil_year.csv           pannello NIL x anno (flag balanced)
 *   $FIG/aff_share_above40.png      quota di residenti in NIL oltre la soglia, 2014-2024
-*   $FIG/aff_share_above40_long.png serie lunga, con il cambio di zone segnato
 *   $FIG/aff_map_A60_2014.png, aff_map_A60_2024.png  mappe dell'indice principale
 *==============================================================================*
 version 16
@@ -163,14 +161,13 @@ save "$WORK/milano_income.dta", replace
 * zonizzazione in vigore in ogni semestre
 use "$WORK/omi_civ_sem.dta", clear
 keep anno sem zona R_mid P_mid
-bysort anno sem: egen byte old = max(zona == "B01")
+* Fino al 2013 le zone erano 55, con altri confini; il primo semestre 2014 e' di
+* transizione (meta' delle zone ha ancora i codici vecchi). La zonizzazione 2021
+* vale dal secondo semestre 2014: si usano solo i semestri da 2014S2.
+drop if anno < 2014 | (anno == 2014 & sem == 1)
 bysort anno sem: egen byte z25 = max(inlist(zona, "D37", "D38", "D39", "D40"))
-gen byte scheme = cond(old, 11, cond(z25, 25, 21))
-drop old z25
-* il primo semestre 2014 e' di transizione: meta' delle zone ha ancora i codici
-* vecchi (B02-B06, C01-C09, D01-D09) senza poligoni corrispondenti; la
-* zonizzazione 2021 vale dal secondo semestre 2014. Il 2014 usa solo 2014S2.
-drop if anno == 2014 & sem == 1
+gen byte scheme = cond(z25, 25, 21)
+drop z25
 rename zona z
 tempfile sem
 save `sem'
@@ -191,7 +188,7 @@ program define omi_weights
     clear
     tempfile acc
     local first 1
-    foreach s in 11 21 25 {
+    foreach s in 21 25 {
         use `gt', clear
         local tv = cond("`target'" == "zona", "zona21", "nil")
         gen str3 z = zona`s'
@@ -238,10 +235,7 @@ foreach T in nil zona {
     rename (anno R_sem P_sem) (year R P)
     label variable R "Affitto OMI, punto medio (EUR/m2 lordo/mese)"
     label variable P "Compravendita OMI, punto medio (EUR/m2 lordo)"
-    if "`T'" == "zona" {
-        keep if year >= 2014
-        save "$WORK/omi_zone21_sem.dta", replace
-    }
+    if "`T'" == "zona" save "$WORK/omi_zone21_sem.dta", replace
     if "`T'" == "nil" save "$WORK/omi_nil_sem.dta", replace
     restore
     drop P_sem numP denP
@@ -250,12 +244,8 @@ foreach T in nil zona {
     rename anno year
     label variable R "Affitto OMI, punto medio (EUR/m2 lordo/mese), media dei semestri"
     label variable cov "Copertura minima con zone OMI quotate"
-    if "`T'" == "nil" save "$WORK/omi_nil_year_long.dta", replace
-    if "`T'" == "zona" {
-        * la zonizzazione 2021 e' coerente solo dal 2014
-        keep if year >= 2014
-        save "$WORK/omi_zone21_year.dta", replace
-    }
+    if "`T'" == "nil" save "$WORK/omi_nil_year.dta", replace
+    if "`T'" == "zona" save "$WORK/omi_zone21_year.dta", replace
 }
 
 *--- 3. Indice per NIL e anno ----------------------------------------------*
@@ -268,23 +258,15 @@ keep nil pop
 rename pop pop2019
 tempfile p19
 save `p19'
-use `pop', clear
-keep if year == 2011
-keep nil pop
-rename pop pop2011
-tempfile p11
-save `p11'
 
-use "$WORK/omi_nil_year_long.dta", clear
-keep if inrange(year, 2004, 2024)
+use "$WORK/omi_nil_year.dta", clear
+keep if inrange(year, `Y0', 2024)
 merge m:1 year using "$WORK/milano_income.dta", keep(match) nogen
 merge 1:1 nil year using `pop', keep(master match) nogen
-merge m:1 nil using `p11', keep(master match) nogen
 merge m:1 nil using `p19', keep(master match) nogen
-replace pop = pop2011 if year < 2011
 bysort nil (name): replace name = name[_N]
 drop if pop2019 < $SMALL_NIL
-* indice principale sul netto e controllo sul lordo, 2004-2024
+* indice principale sul netto e controllo sul lordo, 2014-2024
 gen double A60  = 12*60*R/y_med_net
 gen double A40  = 12*40*R/y_med_net
 gen double A60d = 12*60*R/(2*y_med_net)
@@ -297,24 +279,15 @@ foreach a in A60 A40 A60d {
     gen byte off_`a' = `a' > `THR' if !missing(`a')
 }
 gen byte off_A60g = A60g > `THRG' if !missing(A60g)
-* Periodo dell'indice principale: dal 2014, primo anno con la zonizzazione OMI
-* attuale (2014S2). Fino al 2013S2 le zone erano 55 con altri confini e il
-* semestre 2014S1 e' di transizione: un NIL coperto da zone diverse prima e dopo
-* il cambio avrebbe un salto di affitto dovuto ai confini, non al mercato.
-* Per questo le quote principali si calcolano solo sul 2014-2024; il 2004-2013
-* resta in una serie lunga separata, da usare solo come descrizione di contesto.
-* pannello bilanciato principale: NIL con l'affitto in tutti gli anni `Y0'-2024
+* Periodo dell'indice: dal 2014, primo anno con la zonizzazione OMI attuale
+* (2014S2). Fino al 2013S2 le zone erano 55 con altri confini: un NIL coperto da
+* zone diverse prima e dopo il cambio avrebbe un salto di affitto dovuto ai
+* confini, non al mercato. Per questo gli anni 2004-2013 non si usano.
+* pannello bilanciato: NIL con l'affitto in tutti gli anni `Y0'-2024
 bysort nil: egen byte nyrs = total(!missing(A60g) & year >= `Y0')
 gen byte balanced = nyrs == 2024 - `Y0' + 1
 drop nyrs
 label variable balanced "NIL osservato in tutti gli anni `Y0'-2024 (indice principale)"
-* serie lunga: NIL con l'affitto in tutti gli anni 2004-2024
-bysort nil: egen byte nyrs = total(!missing(A60g))
-gen byte balanced_long = nyrs == 2024 - 2004 + 1
-drop nyrs
-label variable balanced_long "NIL osservato in tutti gli anni 2004-2024 (serie lunga)"
-gen byte omi_old = year < `Y0'
-label variable omi_old "Anno con la zonizzazione OMI precedente (55 zone, fino al 2013)"
 order nil name year pop R y_med_net y_med A60 A40 A60d A60g
 save "$WORK/aff_nil_year.dta", replace
 export delimited using "$TAB/aff_nil_year.csv", replace
@@ -324,8 +297,6 @@ local nall = r(r)
 quietly levelsof nil if balanced
 di as txt _n "  NIL con almeno un anno dal `Y0': " as res `nall' as txt "; nel pannello bilanciato `Y0'-2024: " as res r(r) ///
     as txt " (esclusi i NIL con meno di $SMALL_NIL residenti)"
-quietly levelsof nil if balanced_long
-di as txt "  NIL nella serie lunga 2004-2024 (con il cambio di zonizzazione del 2014): " as res r(r)
 
 *--- 4. Sintesi per anno -------------------------------------------------------*
 capture program drop affsum
@@ -354,8 +325,6 @@ end
 
 di as txt _n "  Indice principale, `Y0'-2024: quota di residenti in NIL oltre il 40% del netto:"
 affsum "balanced & year >= `Y0'" "$TAB/aff_city_year.csv"
-di as txt _n "  Serie lunga 2004-2024 (attenzione: cambio di zonizzazione OMI nel 2014):"
-affsum "balanced_long" "$TAB/aff_city_year_long.csv"
 
 preserve
 import delimited using "$TAB/aff_city_year.csv", clear
@@ -372,17 +341,6 @@ twoway (connected sh_pop_a60  year, lcolor("37 106 191") mcolor("37 106 191") ms
        note("Affitto OMI (punto medio, abitazioni civili) / reddito netto mediano dei contribuenti milanesi; soglia 40% (OCSE)." ///
             "Zonizzazione OMI attuale (dal 2014S2). Netto stimato da ds531 con IRPEF, addizionali e bonus (detrazioni da lavoro dipendente).", size(vsmall))
 graph export "$FIG/aff_share_above40.png", replace width(2400)
-import delimited using "$TAB/aff_city_year_long.csv", clear
-twoway (connected sh_pop_a60 year if year < `Y0', lcolor(gs9) mcolor(gs9) msize(small)) ///
-       (connected sh_pop_a60 year if year >= `Y0', lcolor("37 106 191") mcolor("37 106 191") msize(small)), ///
-       xline(2013.5, lcolor(gs10) lpattern(dash)) ///
-       ylabel(0(.2)1, format(%3.1f)) xlabel(2004(2)2024) ///
-       ytitle("Quota di residenti in NIL oltre il 40% del netto") xtitle("") ///
-       title("Serie lunga: prima e dopo il cambio delle zone OMI", size(medsmall)) ///
-       legend(order(1 "zone OMI fino al 2013 (55 zone)" 2 "zone OMI dal 2014") rows(1) size(small) position(6)) ///
-       graphregion(color(white)) ///
-       note("I due tratti non sono confrontabili direttamente: i confini delle zone cambiano tra 2013 e 2014.", size(vsmall))
-graph export "$FIG/aff_share_above40_long.png", replace width(2400)
 restore
 
 *--- 5. Mappe dell'indice principale, 2014 e 2024 ---------------------------*
