@@ -195,7 +195,7 @@ do "$CODE/14_figures.do"
 do "$CODE/15_robustness.do"
 do "$CODE/16_m3_paper.do"
 do "$CODE/17_immobiliare_check.do"   // controllo: affitti OMI vs Immobiliare.it (macrozone)
-do "$CODE/18_affordability_milano.do" // affordability sul reddito netto mediano, soglia 40% (OCSE), NIL 2014-2024; controllo 30% del lordo
+do "$CODE/18_affordability_milano.do" // affordability sul reddito netto mediano, soglia 40% (OCSE), NIL 2015-2024; controllo 30% del lordo
 do "$CODE/18b_income_net.do"          // reddito netto mediano (scenari di detrazione) e soglia OCSE del 40% sul netto
 do "$CODE/20_nil_typology.do"        // tipologia dei NIL per composizione dei residenti (2014)
 do "$CODE/19_m4_did.do"              // differenza nelle differenze: apertura della M4 (usa 03c e 20)

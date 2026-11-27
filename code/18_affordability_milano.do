@@ -2,8 +2,9 @@
 * 18_affordability_milano.do
 * Evoluzione dell'affordability degli affitti a Milano per il "cittadino tipico"
 *
-* Indice (2014-2024: solo anni con la zonizzazione OMI attuale; le quotazioni
-* 2004-2013, su 55 zone con altri confini, non si usano):
+* Indice 2015-2024: primi anni interi con la zonizzazione OMI attuale (il 2014
+* ha solo il 2014S2; le quotazioni 2004-2013, su 55 zone con altri confini, non
+* si usano):
 *   A_it = 12 x S x affitto OMI_it (EUR/m2/mese, punto medio) / reddito NETTO mediano_t
 *   quartiere "fuori portata" se A_it > 0,40: soglia OCSE/Eurostat di sovraccarico
 *   (OECD Affordable Housing Database, HC1.2.3: affitto o mutuo > 40% del reddito
@@ -44,10 +45,10 @@
 *   $WORK/omi_zone21_year.dta       affitto OMI per zona (zonizzazione 2021), 2014-2025
 *   $WORK/omi_zone21_sem.dta, omi_nil_sem.dta  affitti e prezzi per semestre (per il modulo 19)
 *   $WORK/aff_nil_year.dta          indice per NIL e anno
-*   $TAB/aff_city_year.csv          2014-2024: reddito, quota di NIL e di residenti oltre la soglia
+*   $TAB/aff_city_year.csv          2015-2024: reddito, quota di NIL e di residenti oltre la soglia
 *   $TAB/aff_nil_year.csv           pannello NIL x anno (flag balanced)
-*   $FIG/aff_share_above40.png      quota di residenti in NIL oltre la soglia, 2014-2024
-*   $FIG/aff_map_A60_2014.png, aff_map_A60_2024.png  mappe dell'indice principale
+*   $FIG/aff_share_above40.png      quota di residenti in NIL oltre la soglia, 2015-2024
+*   $FIG/aff_map_A60_2015.png, aff_map_A60_2024.png  mappe dell'indice principale
 *==============================================================================*
 version 16
 di as txt _n "{hline 78}" _n "18 - AFFORDABILITY PER IL CITTADINO TIPICO (REDDITO MEDIANO DI MILANO)" _n "{hline 78}"
@@ -61,7 +62,7 @@ foreach g in RAW:data/raw WORK:data/work TAB:output/tables FIG:output/figures CO
 if "$SMALL_NIL" == "" global SMALL_NIL 500
 local THR   0.40      // soglia di affordability sul reddito netto (OCSE)
 local THRG  0.30      // soglia sul reddito lordo (controllo, regola HUD)
-local Y0    2014      // primo anno dell'indice principale (zonizzazione OMI attuale)
+local Y0    2015      // primo anno dell'indice: primo anno intero (due semestri) con la zonizzazione OMI attuale
 local COV   0.80      // copertura minima di un NIL o di una zona con zone OMI quotate
 
 *--- 1. Reddito mediano di Milano (ds531) ----------------------------------*
@@ -266,7 +267,7 @@ merge 1:1 nil year using `pop', keep(master match) nogen
 merge m:1 nil using `p19', keep(master match) nogen
 bysort nil (name): replace name = name[_N]
 drop if pop2019 < $SMALL_NIL
-* indice principale sul netto e controllo sul lordo, 2014-2024
+* indice principale sul netto e controllo sul lordo, 2015-2024
 gen double A60  = 12*60*R/y_med_net
 gen double A40  = 12*40*R/y_med_net
 gen double A60d = 12*60*R/(2*y_med_net)
@@ -279,10 +280,11 @@ foreach a in A60 A40 A60d {
     gen byte off_`a' = `a' > `THR' if !missing(`a')
 }
 gen byte off_A60g = A60g > `THRG' if !missing(A60g)
-* Periodo dell'indice: dal 2014, primo anno con la zonizzazione OMI attuale
-* (2014S2). Fino al 2013S2 le zone erano 55 con altri confini: un NIL coperto da
-* zone diverse prima e dopo il cambio avrebbe un salto di affitto dovuto ai
-* confini, non al mercato. Per questo gli anni 2004-2013 non si usano.
+* Periodo dell'indice: dal 2015. Fino al 2013S2 le zone erano 55 con altri
+* confini: un NIL coperto da zone diverse prima e dopo il cambio avrebbe un salto
+* di affitto dovuto ai confini, non al mercato. Il 2014 ha un solo semestre con
+* la zonizzazione attuale (2014S2): dal 2015 ogni anno e' la media di due
+* semestri, quindi gli anni sono confrontabili tra loro.
 * pannello bilanciato: NIL con l'affitto in tutti gli anni `Y0'-2024
 bysort nil: egen byte nyrs = total(!missing(A60g) & year >= `Y0')
 gen byte balanced = nyrs == 2024 - `Y0' + 1
@@ -339,11 +341,11 @@ twoway (connected sh_pop_a60  year, lcolor("37 106 191") mcolor("37 106 191") ms
               4 "controllo: 30% del lordo") rows(2) size(small) position(6)) ///
        graphregion(color(white)) ///
        note("Affitto OMI (punto medio, abitazioni civili) / reddito netto mediano dei contribuenti milanesi; soglia 40% (OCSE)." ///
-            "Zonizzazione OMI attuale (dal 2014S2). Netto stimato da ds531 con IRPEF, addizionali e bonus (detrazioni da lavoro dipendente).", size(vsmall))
+            "Zonizzazione OMI attuale; ogni anno e' la media dei due semestri. Netto stimato da ds531 con IRPEF, addizionali e bonus (detrazioni da lavoro dipendente).", size(vsmall))
 graph export "$FIG/aff_share_above40.png", replace width(2400)
 restore
 
-*--- 5. Mappe dell'indice principale, 2014 e 2024 ---------------------------*
+*--- 5. Mappe dell'indice principale, 2015 e 2024 ---------------------------*
 capture which spmap
 if _rc == 0 {
     preserve
