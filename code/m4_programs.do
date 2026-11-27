@@ -193,6 +193,80 @@ program define m4run
     di as txt "     dopo l'apertura: `post'"
 end
 
+* m4invert: IC95 per inversione ESATTA del test di permutazione sotto un effetto
+* costante additivo delta (Fisher; Imbens e Rubin, 2015, cap. 5).
+*   Per un delta di prova: Y* = Y - delta x D_it (D = area trattata nei periodi dopo
+*   la propria apertura), poi test di permutazione dell'ipotesi "nessun effetto" su
+*   Y*. L'IC e' l'insieme dei delta non rifiutati al 5% (p > 0,05). Gli estremi si
+*   trovano per bisezione; le permutazioni sono le stesse per ogni delta (stesso seme).
+*   Differenza con l'IC di m4run (stima +/- c): li' la distribuzione delle stime
+*   permutate e' quella sotto delta = 0 e si suppone che non cambi con delta.
+capture program drop m4perm_p
+program define m4perm_p, rclass
+    syntax varname, Unit(varname) Time(varname) Cohort(varname) Sample(varname) ///
+        Step(real) Tmax(real) Perms(integer) Seed(string)
+    local y `varlist'
+    csatt `y', unit(`unit') time(`time') cohort(`cohort') sample(`sample') step(`step') tmax(`tmax')
+    local att = r(att)
+    tempvar first cpf cp
+    quietly bysort `unit' (`time'): gen byte `first' = _n == 1 & `sample'
+    set seed `seed'
+    local ext 0
+    local ok 0
+    forvalues j = 1/`perms' {
+        quietly {
+            capture drop `cpf' `cp'
+            gen double `cpf' = .
+            mata: m4_perm("`cohort'", "`first'", "`cpf'")
+            bysort `unit': egen double `cp' = max(`cpf')
+        }
+        csatt `y', unit(`unit') time(`time') cohort(`cp') sample(`sample') step(`step') tmax(`tmax')
+        if !missing(r(att)) {
+            local ++ok
+            if abs(r(att)) >= abs(`att') - 1e-12 local ++ext
+        }
+    }
+    return scalar p = (`ext' + 1)/(`ok' + 1)
+    return scalar att = `att'
+end
+
+capture program drop m4invert
+program define m4invert, rclass
+    syntax varname, Unit(varname) Time(varname) Cohort(varname) Sample(varname) ///
+        Step(real) Tmax(real) Perms(integer) Seed(string) Lo(real) Hi(real) [Tol(real 0.001)]
+    local y `varlist'
+    tempvar D ys
+    quietly gen byte `D' = `cohort' > 0 & !missing(`cohort') & `time' >= `cohort' - 1e-6
+    * stima puntuale
+    csatt `y', unit(`unit') time(`time') cohort(`cohort') sample(`sample') step(`step') tmax(`tmax')
+    local att = r(att)
+    foreach side in lo hi {
+        * a = dentro l'IC (p > 0,05), b = fuori (p <= 0,05)
+        local a = `att'
+        local b = cond("`side'" == "lo", `lo', `hi')
+        capture drop `ys'
+        quietly gen double `ys' = `y' - `b'*`D'
+        m4perm_p `ys', unit(`unit') time(`time') cohort(`cohort') sample(`sample') step(`step') ///
+            tmax(`tmax') perms(`perms') seed(`seed')
+        if r(p) > 0.05 {
+            di as error "  m4invert: anche delta = `b' non e' rifiutato; allargare l'intervallo di ricerca"
+            return scalar `side' = .
+            continue
+        }
+        while abs(`b' - `a') > `tol' {
+            local m = (`a' + `b')/2
+            capture drop `ys'
+            quietly gen double `ys' = `y' - `m'*`D'
+            m4perm_p `ys', unit(`unit') time(`time') cohort(`cohort') sample(`sample') step(`step') ///
+                tmax(`tmax') perms(`perms') seed(`seed')
+            if r(p) > 0.05 local a = `m'
+            else local b = `m'
+        }
+        return scalar `side' = (`a' + `b')/2
+    }
+    return scalar att = `att'
+end
+
 * gruppo di apertura di un'area: prima tratta con esposizione >= soglia
 capture program drop m4groups
 program define m4groups

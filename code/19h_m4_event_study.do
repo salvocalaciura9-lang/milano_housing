@@ -19,12 +19,22 @@
 *                      sulla finestra mostrata (banda "sup-t": copre tutti i
 *                      coefficienti insieme; Montiel Olea e Plagborg-Moller, 2019).
 *
+* Avvertenze sulle garanzie (da riportare nel testo):
+*   - il p-value di permutazione ha livello esatto per l'ipotesi nulla "nessun
+*     effetto in nessuna zona e periodo" SE l'assegnazione delle date di apertura
+*     tra le aree del campione fosse scambiabile; e' un'ipotesi, non il disegno;
+*   - le bande (puntuali e simultanee) usano la distribuzione delle stime permutate
+*     sotto effetto nullo, centrata sulla stima: sono un'approssimazione che
+*     presuppone un effetto costante e una distribuzione che non cambia con
+*     l'effetto. Per l'effetto medio sugli affitti l'IC per inversione esatta del
+*     test (m4invert) e' calcolato qui sotto come controllo.
+*
 * Esiti: ln affitto e ln prezzo (zone, semestri -12..+6); uscite verso altri
 * comuni per 1.000 residenti (NIL abbinati, anni -8..+1).
 * Grafici in italiano e in inglese (suffisso _en).
 *
 * Input:  $WORK/m4_zone_panel.dta, m4_nil_panel.dta (modulo 19)
-* Output: $TAB/m4_event_study.csv;
+* Output: $TAB/m4_event_study.csv, m4_ci_inversion.csv;
 *         $FIG/m4_cs_event_rent.png, m4_cs_event_price.png, m4_cs_event_exits.png
 *         (e versioni _en)
 *==============================================================================*
@@ -101,16 +111,22 @@ program define esrun
         * il riferimento e = -1 vale 0 in ogni permutazione: escluso dalle bande
         quietly drop if e == -1
         gen double a = abs(att)
+        * percentili come nel resto del modulo (m4_crit): statistica d'ordine
+        * ceil(0,95 x n) dei valori ordinati
         preserve
-        collapse (p95) c = a (sd) sd = att (count) nperm = att, by(e)
+        bysort e (a): gen long nperm = _N
+        by e: egen double sd = sd(att)
+        by e: keep if _n == ceil(0.95*_N)
+        rename a c
+        keep e c sd nperm
         tempfile cs
         save `cs'
         restore
         merge m:1 e using `cs', nogen
         gen double tt = a/sd
         collapse (max) M = tt, by(j)
-        _pctile M, p(95)
-        local csup = r(r1)
+        sort M
+        local csup = M[ceil(0.95*_N)]
     }
     frame es0 {
         merge 1:1 e using `cs', nogen
@@ -144,6 +160,27 @@ esrun lnR, unit(zid) time(t) cohort(cohort) sample(s_match) step(0.5) tmax($M4_T
     perms($M4_PERMS) emin(-12) emax(6) name(rent)
 esrun lnP, unit(zid) time(t) cohort(cohort) sample(s_match) step(0.5) tmax($M4_TLAST) ///
     perms($M4_PERMS) emin(-12) emax(6) name(price)
+
+* --- IC95 dell'effetto medio sugli affitti per inversione esatta del test ---------
+* (confronto con l'IC stima +/- c riportato dal modulo 19)
+capture frame drop inv
+frame create inv str60 spec double att double lo double hi long perms
+foreach s in s_match s_all {
+    local lab = cond("`s'" == "s_match", "(1) abbinate + non ancora trattate", "(2) tutte le mai esposte + non ancora trattate")
+    m4invert lnR, unit(zid) time(t) cohort(cohort) sample(`s') step(0.5) tmax($M4_TLAST) ///
+        perms($M4_PERMS) seed($SEED) lo(-0.30) hi(0.20)
+    frame post inv ("`lab'") (r(att)) (r(lo)) (r(hi)) ($M4_PERMS)
+    di as txt "  -> IC95 per inversione esatta, `lab': [" %7.4f r(lo) ", " %7.4f r(hi) "]  (stima " %7.4f r(att) ")"
+}
+frame inv {
+    foreach v in att lo hi {
+        gen double `v'_pct = 100*(exp(`v') - 1)
+    }
+    format att lo hi %8.4f
+    format *_pct %6.1f
+    list, noobs sep(0) abbrev(10)
+    export delimited using "$TAB/m4_ci_inversion.csv", replace
+}
 
 * --- NIL: uscite ----------------------------------------------------------------
 use "$WORK/m4_nil_panel.dta", clear
