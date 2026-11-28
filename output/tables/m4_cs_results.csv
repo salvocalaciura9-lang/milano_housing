@@ -1,26 +1,26 @@
-spec,outcome,att,p_perm,pre,p_perm_pre,nT,nC
-"(0) TWFE classico, tutte le mai esposte (solo confronto)",lnR,-.1008921888744502,,,,,
-(1) PRINCIPALE: controlli abbinati + non ancora trattate,lnR,-.0477118738919471,.473,.0072096846638861,.897,3,6
-(2) tutte le zone mai esposte + non ancora trattate,lnR,-.0574131180572558,.274,.0178767807240422,.714,3,16
-(3) solo non ancora trattate (zone delle tratte successive),lnR,-.048069994971614,.638,.1074547846301142,.638,3,0
-"(4) prezzi di compravendita, controlli abbinati",lnP,-.0254326800049554,.494,-.0440095818527955,.31,3,6
-(5) NIL: mai esposti + non ancora trattati,r_ac,-3.231251404745089,.064,-.3814980962197039,.8,12,57
-(6) NIL: abbinati per composizione + non ancora trattati,r_ac,-3.507259457032195,.01,-1.182639630570743,.244,12,21
-(5) NIL: mai esposti + non ancora trattati,r_in,15.82010327078911,.102,11.83693424699048,.118,12,57
-(6) NIL: abbinati per composizione + non ancora trattati,r_in,16.28065011166114,.122,10.85646564044917,.278,12,21
-(5) NIL: mai esposti + non ancora trattati,nm_c2029,5.470157942424603,.742,37.92859168437484,.088,12,57
-(6) NIL: abbinati per composizione + non ancora trattati,nm_c2029,7.880341252200353,.482,33.89584675500141,.168,12,21
-(5) NIL: mai esposti + non ancora trattati,nm_c3039,-3.867536207177289,.794,8.841611015904519,.41,12,57
-(6) NIL: abbinati per composizione + non ancora trattati,nm_c3039,-10.29794606044991,.504,4.260953965692032,.458,12,21
-(5) NIL: mai esposti + non ancora trattati,nm_c0009,-23.54971668773111,.228,-8.829268004990276,.404,12,57
-(6) NIL: abbinati per composizione + non ancora trattati,nm_c0009,-26.22801756368316,.118,-8.129680748937378,.37,12,21
-(5) NIL: mai esposti + non ancora trattati,sh_g2539,-.0014324563322564,.606,-.0113342945158472,.022,12,57
-(6) NIL: abbinati per composizione + non ancora trattati,sh_g2539,-.0018054414307691,.55,-.0122605293225307,.01,12,21
-(5) NIL: mai esposti + non ancora trattati,sh_hi,.000315819112848,.718,-.0007095885590287,.366,12,57
-(6) NIL: abbinati per composizione + non ancora trattati,sh_hi,-.0003297225586949,.6860000000000001,.0005765915758966,.54,12,21
-(5) NIL: mai esposti + non ancora trattati,sh_for27,.0020498154545801,.694,-.0008081180582743,.908,12,57
-(6) NIL: abbinati per composizione + non ancora trattati,sh_for27,.0033428614174561,.382,-.0061769121640559,.27,12,21
-(5) NIL: mai esposti + non ancora trattati,sh_head35,-.0000375439988009,1,-.005645241241227,.31,12,57
-(6) NIL: abbinati per composizione + non ancora trattati,sh_head35,-.0007824717968251,.8100000000000001,-.0054543182157456,.264,12,21
-(5) NIL: mai esposti + non ancora trattati,lnpop,.0099346617119214,.344,.0025311248299146,.896,12,57
-(6) NIL: abbinati per composizione + non ancora trattati,lnpop,.0155328857242116,.116,-.0174240339639671,.094,12,21
+spec,outcome,att,p_perm,pre,p_perm_pre,nT,nC,ci_lo,ci_hi,crit5,nperm,metodo,periodi,post
+"(0) TWFE classico, tutte le mai esposte (solo confronto)",lnR,-.1301543710974807,.0247875384703941,,,5,20,-.2423222042845776,-.0179865379103838,,,errori cluster per zona (inaffidabili con poche trattate),,
+(1) PRINCIPALE: controlli abbinati + non ancora trattate,lnR,-.0466444995213786,.133,.0282391496538498,.522,5,6,-.1103055535310448,.0170165544882876,.0636610540096662,999,permutazione dei gruppi di apertura (999),2014S2-2026S1,g2023S1(1): 2023S1-2026S1 (7); g2025S1(4): 2025S1-2026S1 (3);
+(2) tutte le zone mai esposte + non ancora trattate,lnR,-.0406575691238831,.243,.0518720721584183,.198,5,20,-.1034594105973366,.0221442723495704,.0628018414734535,999,permutazione dei gruppi di apertura (999),2014S2-2026S1,g2023S1(1): 2023S1-2026S1 (7); g2025S1(4): 2025S1-2026S1 (3);
+(3) solo non ancora trattate (zone delle tratte successive),lnR,.0314230068376669,.625,-.0451348521616314,.617,5,0,-.0474463319008756,.1102923455762094,.0788693387385425,999,permutazione dei gruppi di apertura (999),2014S2-2024S2,g2023S1(1): 2023S1-2024S2 (4); g2025S1(4): nessun periodo dopo;
+"(4) prezzi di compravendita, controlli abbinati",lnP,-.031414317849685,.272,-.009952741595302,.85,5,6,-.0866114566726352,.0237828209732652,.0551971388229502,999,permutazione dei gruppi di apertura (999),2014S2-2026S1,g2023S1(1): 2023S1-2026S1 (7); g2025S1(4): 2025S1-2026S1 (3);
+(5) NIL: mai esposti + non ancora trattati,r_ac,-2.034043605834587,.286,-.260367545362218,.864,8,60,-6.665458648588121,2.597371436918947,4.631415042753534,499,permutazione dei gruppi di apertura (499),2012-2024,g2023(3): 2023-2024 (2); g2025(5): nessun periodo dopo;
+(6) NIL: abbinati per composizione + non ancora trattati,r_ac,-2.387738159068092,.072,-1.185016200588258,.13,8,14,-5.025047411971382,.2495710938351978,2.63730925290329,499,permutazione dei gruppi di apertura (499),2012-2024,g2023(3): 2023-2024 (2); g2025(5): nessun periodo dopo;
+(5) NIL: mai esposti + non ancora trattati,r_in,-1.760376166082468,.592,-1.038672309731881,.694,8,60,-33.35560436616728,29.83485203400235,31.59522820008482,499,permutazione dei gruppi di apertura (499),2012-2024,g2023(3): 2023-2024 (2); g2025(5): nessun periodo dopo;
+(6) NIL: abbinati per composizione + non ancora trattati,r_in,.1002061674169186,.948,-2.1701094785306,.266,8,14,-3.811384294073334,4.011796628907172,3.911590461490253,499,permutazione dei gruppi di apertura (499),2012-2024,g2023(3): 2023-2024 (2); g2025(5): nessun periodo dopo;
+(5) NIL: mai esposti + non ancora trattati,nm_c2029,-7.148395403715732,.702,-6.013268091589568,.6840000000000001,8,60,-60.03630699676959,45.73951618933813,52.88791159305386,499,permutazione dei gruppi di apertura (499),2008-2024,g2023(3): 2023-2024 (2); g2025(5): nessun periodo dopo;
+(6) NIL: abbinati per composizione + non ancora trattati,nm_c2029,1.108887501450692,.914,-10.31100250591646,.236,8,14,-20.45914192700098,22.67691692990236,21.56802942845167,499,permutazione dei gruppi di apertura (499),2008-2024,g2023(3): 2023-2024 (2); g2025(5): nessun periodo dopo;
+(5) NIL: mai esposti + non ancora trattati,nm_c3039,12.08429933067529,.516,7.848058069971155,.476,8,60,-28.58894554211024,52.75754420346082,40.67324487278553,499,permutazione dei gruppi di apertura (499),2008-2024,g2023(3): 2023-2024 (2); g2025(5): nessun periodo dopo;
+(6) NIL: abbinati per composizione + non ancora trattati,nm_c3039,12.88872061974322,.346,.5395500597805269,.95,8,14,-14.38762360931468,40.16506484880112,27.2763442290579,499,permutazione dei gruppi di apertura (499),2008-2024,g2023(3): 2023-2024 (2); g2025(5): nessun periodo dopo;
+(5) NIL: mai esposti + non ancora trattati,nm_c0009,-8.145409678869022,.6840000000000001,-.9777709597809805,.9360000000000001,8,60,-59.80699136874038,43.51617201100234,51.66158168987136,499,permutazione dei gruppi di apertura (499),2008-2024,g2023(3): 2023-2024 (2); g2025(5): nessun periodo dopo;
+(6) NIL: abbinati per composizione + non ancora trattati,nm_c0009,-7.622310276899957,.638,-3.237943401228172,.638,8,14,-44.40790186808753,29.16328131428761,36.78559159118757,499,permutazione dei gruppi di apertura (499),2008-2024,g2023(3): 2023-2024 (2); g2025(5): nessun periodo dopo;
+(5) NIL: mai esposti + non ancora trattati,sh_g2539,.0004982838504767,.88,-.002135938096939,.592,8,60,-.0068367874255855,.0078333551265389,.0073350712760622,499,permutazione dei gruppi di apertura (499),2008-2024,g2023(3): 2023-2024 (2); g2025(5): nessun periodo dopo;
+(6) NIL: abbinati per composizione + non ancora trattati,sh_g2539,.001398463221538,.68,-.0020695226190506,.408,8,14,-.0048534232169197,.0076503496599957,.0062518864384577,499,permutazione dei gruppi di apertura (499),2008-2024,g2023(3): 2023-2024 (2); g2025(5): nessun periodo dopo;
+(5) NIL: mai esposti + non ancora trattati,sh_hi,.0004471386514764,.764,-.0014701977732323,.162,8,60,-.0018558254228772,.00275010272583,.0023029640743536,499,permutazione dei gruppi di apertura (499),2008-2024,g2023(3): 2023-2024 (2); g2025(5): nessun periodo dopo;
+(6) NIL: abbinati per composizione + non ancora trattati,sh_hi,-.0005345204042999,.72,.0003330568838291,.8139999999999999,8,14,-.0029750329544971,.0019059921458973,.0024405125501972,499,permutazione dei gruppi di apertura (499),2008-2024,g2023(3): 2023-2024 (2); g2025(5): nessun periodo dopo;
+(5) NIL: mai esposti + non ancora trattati,sh_for27,-.00035785483517,.958,.0027760940370023,.72,8,60,-.0163817760586985,.0156660663883585,.0160239212235285,499,permutazione dei gruppi di apertura (499),2008-2024,g2023(3): 2023-2024 (2); g2025(5): nessun periodo dopo;
+(6) NIL: abbinati per composizione + non ancora trattati,sh_for27,.0004102586250696,.93,-.0018192829892242,.756,8,14,-.009978024267945,.0107985415180842,.0103882828930146,499,permutazione dei gruppi di apertura (499),2008-2024,g2023(3): 2023-2024 (2); g2025(5): nessun periodo dopo;
+(5) NIL: mai esposti + non ancora trattati,sh_head35,.002005434813055,.704,-.002755026684926,.644,8,60,-.0124320844325469,.0164429540586569,.0144375192456019,499,permutazione dei gruppi di apertura (499),2008-2024,g2023(3): 2023-2024 (2); g2025(5): nessun periodo dopo;
+(6) NIL: abbinati per composizione + non ancora trattati,sh_head35,.0031782780886304,.496,-.0031066359016431,.54,8,14,-.0086658533674816,.0150224095447424,.011844131456112,499,permutazione dei gruppi di apertura (499),2008-2024,g2023(3): 2023-2024 (2); g2025(5): nessun periodo dopo;
+(5) NIL: mai esposti + non ancora trattati,lnpop,-.0059110444718299,.58,.0221778222059005,.232,8,60,-.037566018960705,.0257439300170452,.0316549744888751,499,permutazione dei gruppi di apertura (499),2008-2024,g2023(3): 2023-2024 (2); g2025(5): nessun periodo dopo;
+(6) NIL: abbinati per composizione + non ancora trattati,lnpop,.0022491546802371,.772,.003453268775246,.636,8,14,-.0156667036028445,.0201650129633187,.0179158582830816,499,permutazione dei gruppi di apertura (499),2008-2024,g2023(3): 2023-2024 (2); g2025(5): nessun periodo dopo;

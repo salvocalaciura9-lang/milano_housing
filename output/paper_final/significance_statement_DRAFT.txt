@@ -1,0 +1,7 @@
+SIGNIFICANCE STATEMENT - DRAFT FOR THE GROUP'S APPROVAL
+(PNAS asks for 50-120 words, for a reader outside the field. Not yet in main.tex:
+if approved, paste it inside \significancestatement{...}. The Abstract is unchanged.)
+
+Rents in Milan have risen much faster than incomes, sparking protests over access to housing. Using official rent quotations and tax data, we show that the share of residents living in neighbourhoods where a standard flat costs more than 40% of the median taxpayer's net income rose from a quarter in 2015 to over 40% in 2024, with the sharpest deterioration after 2022. We also test whether a new metro line contributed to this rise. Comparing newly served areas with similar areas elsewhere, we find no robust evidence that the line raised rents in the first years after opening. The affordability problem is citywide rather than concentrated around new infrastructure.
+
+(118 words)

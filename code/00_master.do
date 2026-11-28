@@ -31,7 +31,7 @@
 *       (ds531), soglia del 30%, NIL 2008-2024
 *   19  Differenza nelle differenze sull'apertura della M4 (stazioni ds535)
 *   20  Tipologia dei NIL per composizione dei residenti (eseguito prima del 19)
-*   03c Composizione dei NIL e migrazione netta per eta' (ds27, ds1440, nascite)
+*   03c Composizione dei NIL e variazione netta di coorte per eta' (ds27, ds1440, nascite)
 *==============================================================================*
 
 version 16
@@ -178,7 +178,7 @@ do "$CODE/01_import_irpef.do"
 do "$CODE/02_import_omi.do"
 do "$CODE/03_import_ds205.do"
 do "$CODE/03b_import_moves.do"     // cancellazioni/iscrizioni per motivo (DS1600/1956/1596/1954)
-do "$CODE/03c_nil_composition.do"  // composizione per eta'/cittadinanza e migrazione netta per coorte (ds27, ds1440, nascite)
+do "$CODE/03c_nil_composition.do"  // composizione per eta'/cittadinanza e variazione netta di coorte (ds27, ds1440, nascite)
 do "$CODE/04_import_ds1960.do"
 do "$CODE/05_import_index.do"
 do "$CODE/06_affordability_native.do"
@@ -195,10 +195,17 @@ do "$CODE/14_figures.do"
 do "$CODE/15_robustness.do"
 do "$CODE/16_m3_paper.do"
 do "$CODE/17_immobiliare_check.do"   // controllo: affitti OMI vs Immobiliare.it (macrozone)
-do "$CODE/18_affordability_milano.do" // affordability sul reddito netto mediano, soglia 40% (OCSE), NIL 2007-2024; controllo 30% del lordo dal 2004
+do "$CODE/18_affordability_milano.do" // affordability sul reddito netto mediano, soglia 40% (OCSE), NIL 2015-2024; controllo 30% del lordo
 do "$CODE/18b_income_net.do"          // reddito netto mediano (scenari di detrazione) e soglia OCSE del 40% sul netto
 do "$CODE/20_nil_typology.do"        // tipologia dei NIL per composizione dei residenti (2014)
 do "$CODE/19_m4_did.do"              // differenza nelle differenze: apertura della M4 (usa 03c e 20)
+do "$CODE/19b_m4_robustness.do"      // M4: potenza del test, senza un'area trattata, raggio e soglia
+do "$CODE/19c_m4_cantieri.do"        // M4: anticipazione, trattamento dall'inizio dei cantieri (NIL)
+do "$CODE/19d_m4_dose.do"            // M4: esposizione continua (quota dell'area servita di nuovo)
+do "$CODE/19e_m4_sdid.do"            // M4: synthetic difference-in-differences (pacchetto sdid)
+do "$CODE/19f_m4_daniele_romito.do"  // M4: controlli di Daniele e Romito (centroide 1 km, fascia 1-2 km, controllo sintetico per zona)
+do "$CODE/19g_m4_tabella_stime.do"   // M4: tabella unica delle stime (IC95, inferenza, campioni, periodi) e date di trattamento
+do "$CODE/19h_m4_event_study.do"     // M4: event study con bande di permutazione (puntuali e simultanee) e composizione
 
 di as txt _n "Fine: `c(current_date)' `c(current_time)'"
 di as txt "Moduli eseguiti con:  indice=" $IX_OK "  CPI=" $CPI_OK "  shapefile NIL=" $SHP_OK ///

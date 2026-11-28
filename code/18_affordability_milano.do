@@ -2,7 +2,9 @@
 * 18_affordability_milano.do
 * Evoluzione dell'affordability degli affitti a Milano per il "cittadino tipico"
 *
-* Indice principale (dal 2007):
+* Indice 2015-2024: primi anni interi con la zonizzazione OMI attuale (il 2014
+* ha solo il 2014S2; le quotazioni 2004-2013, su 55 zone con altri confini, non
+* si usano):
 *   A_it = 12 x S x affitto OMI_it (EUR/m2/mese, punto medio) / reddito NETTO mediano_t
 *   quartiere "fuori portata" se A_it > 0,40: soglia OCSE/Eurostat di sovraccarico
 *   (OECD Affordable Housing Database, HC1.2.3: affitto o mutuo > 40% del reddito
@@ -10,7 +12,7 @@
 *   (netinc_program.do), detrazioni da lavoro dipendente; altri scenari, controllo
 *   con le imposte vere e scenario calibrato nel modulo 18b.
 *   La prima versione usava il 30% del reddito lordo (regola HUD): resta come
-*   controllo (A60g, 2004-2024).
+*   controllo (A60g).
 *
 * Scenari (S = superficie, reddito al denominatore):
 *   A60  : 60 m2, un reddito netto mediano     (indice principale, soglia 40%)
@@ -27,26 +29,26 @@
 *     (ipotesi: contribuenti distribuiti uniformemente nella classe).
 *     Per confronto si calcola anche il reddito medio (ammontare / contribuenti).
 *   - Affitti: OMI DS1996, abitazioni civili stato normale, punto medio, per
-*     zona e semestre. La zonizzazione OMI cambia nel 2014 (55 -> 38 zone) e nel
-*     secondo semestre 2024 (D15 e D30 divise): ogni semestre si collega alla
-*     griglia con la zonizzazione in vigore (zona11 fino al 2013, zona 2014S2-2024S1,
-*     zona25 dal 2024S2; il 2014S1, di transizione, e' escluso) e si porta sui NIL
-*     e sulle zone OMI 2021 con pesi di
+*     zona e semestre, dal 2014S2. La zonizzazione OMI cambia nel 2014 (55 -> 38
+*     zone): i semestri fino al 2014S1 (di transizione) non si usano. Nel secondo
+*     semestre 2024 D15 e D30 vengono divise: ogni semestre si collega alla
+*     griglia con la zonizzazione in vigore (zona 2014S2-2024S1, zona25 dal
+*     2024S2) e si porta sui NIL e sulle zone OMI 2021 con pesi di
 *     superficie (punti della griglia di ~28 m, modulo 10a).
-*   - Residenti: DS205 (2011-2024); per il 2004-2010 si usano i residenti 2011.
+*   - Residenti: DS205 (2011-2024).
 *   - Esclusi i NIL con meno di $SMALL_NIL residenti nel 2019 (parchi, scali).
 *
 * Output
-*   $WORK/milano_income.dta         reddito mediano lordo (2004-2024) e netto (2007-2024), medio
+*   $WORK/milano_income.dta         reddito mediano lordo e netto, 2004-2024, e medio
 *   $WORK/milano_income_classes.dta classi di reddito per anno (per il modulo 18b)
-*   $WORK/omi_nil_year_long.dta     affitto OMI per NIL e anno, 2004-2025
+*   $WORK/omi_nil_year.dta          affitto OMI per NIL e anno, 2014-2025
 *   $WORK/omi_zone21_year.dta       affitto OMI per zona (zonizzazione 2021), 2014-2025
 *   $WORK/omi_zone21_sem.dta, omi_nil_sem.dta  affitti e prezzi per semestre (per il modulo 19)
 *   $WORK/aff_nil_year.dta          indice per NIL e anno
-*   $TAB/aff_city_year.csv          per anno: reddito, quota di NIL e di residenti oltre la soglia
-*   $TAB/aff_nil_year.csv           pannello NIL x anno
-*   $FIG/aff_share_above40.png      quota di residenti in NIL oltre la soglia, per scenario
-*   $FIG/aff_map_A60_2008.png, aff_map_A60_2024.png  mappe dell'indice principale
+*   $TAB/aff_city_year.csv          2015-2024: reddito, quota di NIL e di residenti oltre la soglia
+*   $TAB/aff_nil_year.csv           pannello NIL x anno (flag balanced)
+*   $FIG/aff_share_above40.png      quota di residenti in NIL oltre la soglia, 2015-2024
+*   $FIG/aff_map_A60_2015.png, aff_map_A60_2024.png  mappe dell'indice principale
 *==============================================================================*
 version 16
 di as txt _n "{hline 78}" _n "18 - AFFORDABILITY PER IL CITTADINO TIPICO (REDDITO MEDIANO DI MILANO)" _n "{hline 78}"
@@ -60,6 +62,7 @@ foreach g in RAW:data/raw WORK:data/work TAB:output/tables FIG:output/figures CO
 if "$SMALL_NIL" == "" global SMALL_NIL 500
 local THR   0.40      // soglia di affordability sul reddito netto (OCSE)
 local THRG  0.30      // soglia sul reddito lordo (controllo, regola HUD)
+local Y0    2015      // primo anno dell'indice: primo anno intero (due semestri) con la zonizzazione OMI attuale
 local COV   0.80      // copertura minima di un NIL o di una zona con zone OMI quotate
 
 *--- 1. Reddito mediano di Milano (ds531) ----------------------------------*
@@ -142,7 +145,7 @@ save "$WORK/milano_income_classes.dta", replace
 do "$CODE/netinc_program.do"
 netinc lo, year(year) type(dip) gen(nlo)
 netinc hi, year(year) type(dip) gen(nhi)
-replace nlo = lo if lo < 0 & year >= 2007
+replace nlo = lo if lo < 0 & year >= 2004
 gen double med_net = nlo + (ntot/2 - cum0)/n*(nhi - nlo) if inmed
 collapse (max) y_med = med y_med_net = med_net (first) n_contr = ntot amt_tot = atot, by(year)
 gen double y_mean = amt_tot/n_contr
@@ -159,14 +162,13 @@ save "$WORK/milano_income.dta", replace
 * zonizzazione in vigore in ogni semestre
 use "$WORK/omi_civ_sem.dta", clear
 keep anno sem zona R_mid P_mid
-bysort anno sem: egen byte old = max(zona == "B01")
+* Fino al 2013 le zone erano 55, con altri confini; il primo semestre 2014 e' di
+* transizione (meta' delle zone ha ancora i codici vecchi). La zonizzazione 2021
+* vale dal secondo semestre 2014: si usano solo i semestri da 2014S2.
+drop if anno < 2014 | (anno == 2014 & sem == 1)
 bysort anno sem: egen byte z25 = max(inlist(zona, "D37", "D38", "D39", "D40"))
-gen byte scheme = cond(old, 11, cond(z25, 25, 21))
-drop old z25
-* il primo semestre 2014 e' di transizione: meta' delle zone ha ancora i codici
-* vecchi (B02-B06, C01-C09, D01-D09) senza poligoni corrispondenti; la
-* zonizzazione 2021 vale dal secondo semestre 2014. Il 2014 usa solo 2014S2.
-drop if anno == 2014 & sem == 1
+gen byte scheme = cond(z25, 25, 21)
+drop z25
 rename zona z
 tempfile sem
 save `sem'
@@ -187,7 +189,7 @@ program define omi_weights
     clear
     tempfile acc
     local first 1
-    foreach s in 11 21 25 {
+    foreach s in 21 25 {
         use `gt', clear
         local tv = cond("`target'" == "zona", "zona21", "nil")
         gen str3 z = zona`s'
@@ -234,10 +236,7 @@ foreach T in nil zona {
     rename (anno R_sem P_sem) (year R P)
     label variable R "Affitto OMI, punto medio (EUR/m2 lordo/mese)"
     label variable P "Compravendita OMI, punto medio (EUR/m2 lordo)"
-    if "`T'" == "zona" {
-        keep if year >= 2014
-        save "$WORK/omi_zone21_sem.dta", replace
-    }
+    if "`T'" == "zona" save "$WORK/omi_zone21_sem.dta", replace
     if "`T'" == "nil" save "$WORK/omi_nil_sem.dta", replace
     restore
     drop P_sem numP denP
@@ -246,12 +245,8 @@ foreach T in nil zona {
     rename anno year
     label variable R "Affitto OMI, punto medio (EUR/m2 lordo/mese), media dei semestri"
     label variable cov "Copertura minima con zone OMI quotate"
-    if "`T'" == "nil" save "$WORK/omi_nil_year_long.dta", replace
-    if "`T'" == "zona" {
-        * la zonizzazione 2021 e' coerente solo dal 2014
-        keep if year >= 2014
-        save "$WORK/omi_zone21_year.dta", replace
-    }
+    if "`T'" == "nil" save "$WORK/omi_nil_year.dta", replace
+    if "`T'" == "zona" save "$WORK/omi_zone21_year.dta", replace
 }
 
 *--- 3. Indice per NIL e anno ----------------------------------------------*
@@ -264,23 +259,15 @@ keep nil pop
 rename pop pop2019
 tempfile p19
 save `p19'
-use `pop', clear
-keep if year == 2011
-keep nil pop
-rename pop pop2011
-tempfile p11
-save `p11'
 
-use "$WORK/omi_nil_year_long.dta", clear
-keep if inrange(year, 2004, 2024)
+use "$WORK/omi_nil_year.dta", clear
+keep if inrange(year, `Y0', 2024)
 merge m:1 year using "$WORK/milano_income.dta", keep(match) nogen
 merge 1:1 nil year using `pop', keep(master match) nogen
-merge m:1 nil using `p11', keep(master match) nogen
 merge m:1 nil using `p19', keep(master match) nogen
-replace pop = pop2011 if year < 2011
 bysort nil (name): replace name = name[_N]
 drop if pop2019 < $SMALL_NIL
-* indice principale sul netto (dal 2007), controllo sul lordo (dal 2004)
+* indice principale sul netto e controllo sul lordo, 2015-2024
 gen double A60  = 12*60*R/y_med_net
 gen double A40  = 12*40*R/y_med_net
 gen double A60d = 12*60*R/(2*y_med_net)
@@ -293,64 +280,72 @@ foreach a in A60 A40 A60d {
     gen byte off_`a' = `a' > `THR' if !missing(`a')
 }
 gen byte off_A60g = A60g > `THRG' if !missing(A60g)
-* pannello bilanciato: NIL con l'affitto in tutti gli anni 2004-2024. Le quote
-* annuali si calcolano solo su questi, cosi' non cambiano per effetto dei NIL
-* che entrano o escono (nel 2014 la nuova zonizzazione OMI lascia alcune zone
-* agricole senza quotazione)
-bysort nil: egen byte nyrs = count(A60g)
-quietly summarize year
-gen byte balanced = nyrs == r(max) - r(min) + 1
+* Periodo dell'indice: dal 2015. Fino al 2013S2 le zone erano 55 con altri
+* confini: un NIL coperto da zone diverse prima e dopo il cambio avrebbe un salto
+* di affitto dovuto ai confini, non al mercato. Il 2014 ha un solo semestre con
+* la zonizzazione attuale (2014S2): dal 2015 ogni anno e' la media di due
+* semestri, quindi gli anni sono confrontabili tra loro.
+* pannello bilanciato: NIL con l'affitto in tutti gli anni `Y0'-2024
+bysort nil: egen byte nyrs = total(!missing(A60g) & year >= `Y0')
+gen byte balanced = nyrs == 2024 - `Y0' + 1
 drop nyrs
-label variable balanced "NIL osservato in tutti gli anni 2004-2024"
+label variable balanced "NIL osservato in tutti gli anni `Y0'-2024 (indice principale)"
 order nil name year pop R y_med_net y_med A60 A40 A60d A60g
 save "$WORK/aff_nil_year.dta", replace
 export delimited using "$TAB/aff_nil_year.csv", replace
 
-quietly levelsof nil if !missing(A60g)
+quietly levelsof nil if !missing(A60g) & year >= `Y0'
 local nall = r(r)
 quietly levelsof nil if balanced
-di as txt _n "  NIL con almeno un anno: " as res `nall' as txt "; nel pannello bilanciato: " as res r(r) ///
+di as txt _n "  NIL con almeno un anno dal `Y0': " as res `nall' as txt "; nel pannello bilanciato `Y0'-2024: " as res r(r) ///
     as txt " (esclusi i NIL con meno di $SMALL_NIL residenti)"
-di as txt "  Attenzione: fino al 2013 gli affitti usano la zonizzazione OMI precedente;" ///
-    _n "  il confronto tra 2013 e 2014 risente del cambio dei confini delle zone."
 
-*--- 4. Sintesi per anno (pannello bilanciato) ------------------------------*
+*--- 4. Sintesi per anno -------------------------------------------------------*
+capture program drop affsum
+program define affsum
+    args sample out
+    preserve
+    keep if `sample'
+    foreach a in A60 A40 A60d A60g {
+        gen double pop_off_`a' = pop*off_`a'
+        gen double pop_ok_`a'  = pop if !missing(`a')
+    }
+    collapse (mean) y_med_net y_med sh_nil_A60 = off_A60 sh_nil_A40 = off_A40 sh_nil_A60d = off_A60d ///
+             sh_nil_A60g = off_A60g (median) A60_median = A60 A60g_median = A60g ///
+             (min) A60_min = A60 (max) A60_max = A60 ///
+             (sum) pop_off_* pop_ok_* (count) n_nil = A60g, by(year)
+    foreach a in A60 A40 A60d A60g {
+        gen double sh_pop_`a' = pop_off_`a'/pop_ok_`a' if pop_ok_`a' > 0
+    }
+    drop pop_off_* pop_ok_*
+    label variable sh_pop_A60  "Quota di residenti in NIL oltre il 40% del netto (60 m2, un reddito)"
+    label variable sh_pop_A60g "Quota di residenti in NIL oltre il 30% del lordo (controllo)"
+    list year y_med_net A60_median sh_pop_A40 sh_pop_A60 sh_pop_A60d sh_pop_A60g, noobs sep(0) abbrev(12)
+    export delimited using "`out'", replace
+    restore
+end
+
+di as txt _n "  Indice principale, `Y0'-2024: quota di residenti in NIL oltre il 40% del netto:"
+affsum "balanced & year >= `Y0'" "$TAB/aff_city_year.csv"
+
 preserve
-keep if balanced
-foreach a in A60 A40 A60d A60g {
-    gen double pop_off_`a' = pop*off_`a'
-    gen double pop_ok_`a'  = pop if !missing(`a')
-}
-collapse (mean) y_med_net y_med sh_nil_A60 = off_A60 sh_nil_A40 = off_A40 sh_nil_A60d = off_A60d ///
-         sh_nil_A60g = off_A60g (median) A60_median = A60 A60g_median = A60g ///
-         (min) A60_min = A60 (max) A60_max = A60 ///
-         (sum) pop_off_* pop_ok_* (count) n_nil = A60g, by(year)
-foreach a in A60 A40 A60d A60g {
-    gen double sh_pop_`a' = pop_off_`a'/pop_ok_`a' if pop_ok_`a' > 0
-}
-drop pop_off_* pop_ok_*
-label variable sh_pop_A60  "Quota di residenti in NIL oltre il 40% del netto (60 m2, un reddito)"
-label variable sh_pop_A60g "Quota di residenti in NIL oltre il 30% del lordo (controllo)"
-di as txt _n "  Quota di residenti che vive in NIL oltre il 40% del reddito netto mediano:"
-list year y_med_net A60_median sh_pop_A40 sh_pop_A60 sh_pop_A60d sh_pop_A60g, noobs sep(0) abbrev(12)
-export delimited using "$TAB/aff_city_year.csv", replace
-
-twoway (connected sh_pop_A60  year, lcolor("37 106 191") mcolor("37 106 191") msize(small)) ///
-       (connected sh_pop_A40  year, lcolor(gs7) mcolor(gs7) msize(small) lpattern(dash)) ///
-       (connected sh_pop_A60d year, lcolor(gs11) mcolor(gs11) msize(small) lpattern(shortdash)) ///
-       (line sh_pop_A60g year, lcolor("200 90 50%60") lpattern(longdash)), ///
-       ylabel(0(.2)1, format(%3.1f)) xlabel(2004(2)2024) ///
+import delimited using "$TAB/aff_city_year.csv", clear
+twoway (connected sh_pop_a60  year, lcolor("37 106 191") mcolor("37 106 191") msize(small)) ///
+       (connected sh_pop_a40  year, lcolor(gs7) mcolor(gs7) msize(small) lpattern(dash)) ///
+       (connected sh_pop_a60d year, lcolor(gs11) mcolor(gs11) msize(small) lpattern(shortdash)) ///
+       (line sh_pop_a60g year, lcolor("200 90 50%60") lpattern(longdash)), ///
+       ylabel(0(.2)1, format(%3.1f)) xlabel(`Y0'(1)2024) ///
        ytitle("Quota di residenti in NIL oltre la soglia") xtitle("") ///
        title("Quartieri fuori portata per chi ha il reddito mediano di Milano", size(medsmall)) ///
        legend(order(1 "60 m2, un reddito" 2 "40 m2, un reddito" 3 "60 m2, due redditi" ///
               4 "controllo: 30% del lordo") rows(2) size(small) position(6)) ///
        graphregion(color(white)) ///
        note("Affitto OMI (punto medio, abitazioni civili) / reddito netto mediano dei contribuenti milanesi; soglia 40% (OCSE)." ///
-            "Netto stimato da ds531 con IRPEF, addizionali e bonus (detrazioni da lavoro dipendente), dal 2007.", size(vsmall))
+            "Zonizzazione OMI attuale; ogni anno e' la media dei due semestri. Netto stimato da ds531 con IRPEF, addizionali e bonus (detrazioni da lavoro dipendente).", size(vsmall))
 graph export "$FIG/aff_share_above40.png", replace width(2400)
 restore
 
-*--- 5. Mappe dell'indice principale, 2008 e 2024 ---------------------------*
+*--- 5. Mappe dell'indice principale, 2015 e 2024 ---------------------------*
 capture which spmap
 if _rc == 0 {
     preserve
@@ -364,7 +359,7 @@ if _rc == 0 {
     sort _ID shape_order
     save "$WORK/nil_shp_sorted.dta", replace
     restore
-    foreach y in 2008 2024 {
+    foreach y in `Y0' 2024 {
         preserve
         keep if year == `y'
         keep nil A60

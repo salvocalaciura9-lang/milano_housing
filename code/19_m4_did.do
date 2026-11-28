@@ -30,7 +30,10 @@
 *   tratta 3  San Babila - San Cristoforo    12/10/2024  -> 2025S1
 *   Per i dati annuali per NIL: 2023, 2024, 2025 (fuori dal pannello: non ancora trattati).
 *
-* Trattamento (fissato prima di guardare i risultati, come nella versione precedente)
+* Trattamento. Raggio principale 500 m: le stazioni M4 distano in mediana 469 m
+* l'una dall'altra e 9 su 21 hanno un'altra linea entro 800 m; con 500 m il test
+* e' anche piu' preciso (effetto minimo rilevabile sugli affitti circa 9% invece
+* di 17%, modulo 19b). La versione iniziale usava 800 m: resta come robustezza.
 *   Punto della griglia "servito di nuovo" = entro $M4_RADIUS m da una stazione M4 e
 *   oltre $M4_RADIUS m da stazioni di altre linee. Esposizione di un'area alla tratta p =
 *   quota dei suoi punti serviti di nuovo da stazioni della tratta p. Gruppo di
@@ -45,8 +48,9 @@
 *   periodo e si cancella nel confronto: l'effetto su ln affordability coincide con
 *   quello su ln affitto, e si possono usare anche i semestri del 2025.
 *   NIL, anni 2008-2024: trasferimenti verso altri comuni (r_ac) e ingressi da altri
-*   comuni e dall'estero per 1.000 residenti (dal 2012); dal modulo 03c migrazione
-*   netta per coorte 20-29, 30-39 e 0-9 anni (traslochi dentro Milano compresi),
+*   comuni e dall'estero per 1.000 residenti (dal 2012); dal modulo 03c variazione
+*   netta di coorte 20-29, 30-39 e 0-9 anni (saldo residuo: traslochi dentro Milano,
+*   decessi e rettifiche anagrafiche compresi),
 *   quota di 25-39enni, di stranieri, di stranieri da paesi ad alto reddito, di
 *   famiglie con capofamiglia sotto i 35 anni, ln residenti. Controlli: tutti i NIL
 *   mai esposti, oppure i 3 piu' simili nella composizione 2014 (modulo 20).
@@ -56,23 +60,29 @@
 * i gruppi di apertura vengono riassegnati a caso alle aree del campione
 * ($M4_PERMS volte) e si conta quante volte l'effetto e' grande come quello stimato.
 *
-* Output: $TAB/m4_groups.csv, m4_cs_results.csv, m4_cs_event.csv;
-*         $FIG/m4_cs_event_rent.png, m4_cs_event_price.png
+* Output: $TAB/m4_groups.csv, m4_cs_results.csv, m4_cs_event.csv
+*         (i grafici dell'event study sono nel modulo 19h)
 *==============================================================================*
 version 16
 di as txt _n "{hline 78}" _n "19 - M4: DIFF-IN-DIFF CON APERTURE SCAGLIONATE E CONTROLLI MIGLIORI" _n "{hline 78}"
 
 if "$ROOT" == "" global ROOT "C:/Users/Salvatore/Downloads/milano_housing_stata/milano_housing"
-foreach g in RAW:data/raw WORK:data/work TAB:output/tables FIG:output/figures {
+foreach g in RAW:data/raw WORK:data/work TAB:output/tables FIG:output/figures CODE:code {
     gettoken k p : g, parse(":")
     local p = subinstr("`p'", ":", "", 1)
     if "${`k'}" == "" global `k' "$ROOT/`p'"
 }
 if "$SEED" == "" global SEED 20261119
-if "$M4_RADIUS" == "" global M4_RADIUS 800
+if "$M4_RADIUS" == "" global M4_RADIUS 500   // bacino pedonale; 800 m nella versione iniziale, ora controllo (19b)
 if "$M4_TREAT" == "" global M4_TREAT 0.20
 if "$M4_PERMS" == "" global M4_PERMS 999
+if "$M4_TLAST" == "" global M4_TLAST 2026     // ultimo semestre OMI (2026 = 2026S1)
 if "$SMALL_NIL" == "" global SMALL_NIL 500
+* M4_TAG: suffisso dei file di output (vuoto = versione principale);
+* M4_LIGHT = 1: solo affitti, prezzi e uscite, senza grafici (per i controlli di
+* robustezza del modulo 19b, che rilancia questo file con raggio e soglia diversi)
+if "$M4_LIGHT" == "" global M4_LIGHT 0
+local TAG = cond("$M4_TAG" == "", "", "_$M4_TAG")
 local NMATCH 3
 
 foreach f in "$RAW/ds535_tpl_metrofermate.csv" "$WORK/omi_zone21_sem.dta" {
@@ -86,121 +96,9 @@ foreach f in "$RAW/ds535_tpl_metrofermate.csv" "$WORK/omi_zone21_sem.dta" {
 *------------------------------------------------------------------------------*
 * 0. Programmi
 *------------------------------------------------------------------------------*
-* csatt: ATT di Callaway e Sant'Anna con periodo base universale (g - step).
-*   Per ogni gruppo g e periodo t:
-*   ATT(g,t) = media [Y_t - Y_base] dei trattati g - media [Y_t - Y_base] dei controlli,
-*   controlli = aree del campione mai esposte o con apertura dopo max(t, base).
-*   r(att) = media degli ATT(g,t) dopo l'apertura (t da g a tmax), pesata per la
-*            numerosita' del gruppo;
-*   r(pre) = stessa media sugli anni prima (da g - prewin*step a g - 2*step): placebo.
-capture program drop csatt
-program define csatt, rclass
-    syntax varname, Unit(varname) Time(varname) Cohort(varname) Sample(varname) ///
-        Step(real) Tmax(real) [Prewin(integer 8) ESframe(string)]
-    local y `varlist'
-    tempvar yb dy trt ctl mT mC
-    quietly levelsof `cohort' if `cohort' > 0 & `sample', local(G)
-    local num 0
-    local den 0
-    local nump 0
-    local denp 0
-    if "`esframe'" != "" {
-        capture frame drop `esframe'
-        frame create `esframe' double g double t double att long nT
-    }
-    foreach g of local G {
-        local b = `g' - `step'
-        quietly {
-            capture drop `yb' `dy' `trt' `ctl' `mT' `mC'
-            bysort `unit': egen double `yb' = max(cond(abs(`time' - `b') < 1e-6, `y', .))
-            gen double `dy' = `y' - `yb' if `sample'
-            gen byte `trt' = abs(`cohort' - `g') < 1e-6 & `sample'
-            gen byte `ctl' = `sample' & !`trt' & (`cohort' == 0 | `cohort' > max(`time', `b') + 1e-6)
-            bysort `time': egen double `mT' = mean(cond(`trt', `dy', .))
-            bysort `time': egen double `mC' = mean(cond(`ctl', `dy', .))
-            count if `trt' & abs(`time' - `b') < 1e-6 & !missing(`yb')
-            local ng = r(N)
-            levelsof `time' if `time' <= `tmax' + 1e-6, local(T)
-        }
-        if `ng' == 0 continue
-        foreach t of local T {
-            quietly summarize `mT' if abs(`time' - `t') < 1e-6, meanonly
-            local a = r(mean)
-            quietly summarize `mC' if abs(`time' - `t') < 1e-6, meanonly
-            local a = `a' - r(mean)
-            if missing(`a') continue
-            if `t' >= `g' - 1e-6 {
-                local num = `num' + `ng'*`a'
-                local den = `den' + `ng'
-            }
-            if `t' <= `g' - 2*`step' + 1e-6 & `t' >= `g' - `prewin'*`step' - 1e-6 {
-                local nump = `nump' + `ng'*`a'
-                local denp = `denp' + `ng'
-            }
-            if "`esframe'" != "" frame post `esframe' (`g') (`t') (`a') (`ng')
-        }
-    }
-    return scalar att = cond(`den' > 0, `num'/`den', .)
-    return scalar pre = cond(`denp' > 0, `nump'/`denp', .)
-end
+do "$CODE/m4_programs.do"     // csatt, m4_perm, m4run, m4groups
 
-* permutazione dei gruppi di apertura tra le aree del campione
-capture mata: mata drop m4_perm()
-mata:
-void m4_perm(string scalar c, string scalar sel, string scalar out)
-{
-    real colvector v
-    v = st_data(., c, sel)
-    st_store(., out, sel, jumble(v))
-}
-end
-
-* m4run: stima, permutazione, salvataggio di una riga dei risultati
-capture program drop m4run
-program define m4run
-    syntax varname, Unit(varname) Time(varname) Cohort(varname) Sample(varname) ///
-        Step(real) Tmax(real) Spec(string) Perms(integer) [Prewin(integer 8) ESframe(string)]
-    local y `varlist'
-    csatt `y', unit(`unit') time(`time') cohort(`cohort') sample(`sample') step(`step') ///
-        tmax(`tmax') prewin(`prewin') esframe(`esframe')
-    local att = r(att)
-    local pre = r(pre)
-    tempvar first cpf cp
-    quietly {
-        bysort `unit' (`time'): gen byte `first' = _n == 1 & `sample'
-        count if `first' & `cohort' > 0
-        local nT = r(N)
-        count if `first' & `cohort' == 0
-        local nC = r(N)
-    }
-    local ext 0
-    local extp 0
-    local ok 0
-    forvalues j = 1/`perms' {
-        quietly {
-            capture drop `cpf' `cp'
-            gen double `cpf' = .
-            mata: m4_perm("`cohort'", "`first'", "`cpf'")
-            bysort `unit': egen double `cp' = max(`cpf')
-        }
-        csatt `y', unit(`unit') time(`time') cohort(`cp') sample(`sample') step(`step') ///
-            tmax(`tmax') prewin(`prewin')
-        if !missing(r(att)) {
-            local ++ok
-            if abs(r(att)) >= abs(`att') - 1e-12 local ++ext
-            if abs(r(pre)) >= abs(`pre') - 1e-12 local ++extp
-        }
-    }
-    local p = (`ext' + 1)/(`ok' + 1)
-    local pp = (`extp' + 1)/(`ok' + 1)
-    frame post m4cs ("`spec'") ("`y'") (`att') (`p') (`pre') (`pp') (`nT') (`nC')
-    di as txt "  -> " as res "`spec'" as txt " [`y']: effetto " as res %8.4f `att' ///
-        as txt "  p perm = " as res %5.3f `p' as txt "   placebo pre " as res %8.4f `pre' ///
-        as txt "  p perm = " as res %5.3f `pp' as txt "   trattate " `nT' "  controlli " `nC'
-end
-
-capture frame drop m4cs
-frame create m4cs str90 spec str16 outcome double att double p_perm double pre double p_perm_pre long nT long nC
+m4cs_init
 
 *------------------------------------------------------------------------------*
 * 1. Stazioni ed esposizione dei punti della griglia
@@ -253,21 +151,12 @@ forvalues p = 1/3 {
     gen byte e`p' = d`p' <= `r' & doth > `r'
 }
 gen byte eany = d4 <= `r'
+* servito di nuovo da una qualsiasi stazione M4 (intensita' del trattamento, modulo 19d)
+gen byte enew = d4 <= `r' & doth > `r'
 tempfile pts
 save `pts'
 
-* gruppo di apertura di un'area: prima tratta con esposizione >= soglia
-capture program drop m4groups
-program define m4groups
-    args unitvar t1 t2 t3
-    collapse (mean) e1 e2 e3 eany (count) npts = pid, by(`unitvar')
-    gen double cohort = .
-    replace cohort = `t3' if e3 >= $M4_TREAT
-    replace cohort = `t2' if e2 >= $M4_TREAT
-    replace cohort = `t1' if e1 >= $M4_TREAT
-    replace cohort = 0 if eany == 0
-    label variable cohort "Primo periodo dopo l'apertura (0 = mai esposta; . = esclusa)"
-end
+* gruppo di apertura di un'area: programma m4groups (m4_programs.do)
 
 use `pts', clear
 keep if zona != ""
@@ -299,7 +188,7 @@ save `zcomp'
 
 use "$WORK/omi_zone21_sem.dta", clear
 gen double t = year + (sem - 1)/2
-keep if inrange(t, 2014.5, 2025.5)     // la zonizzazione 2021 vale dal 2014S2
+keep if inrange(t, 2014.5, $M4_TLAST)  // la zonizzazione 2021 vale dal 2014S2
 gen int tid = round(2*t)
 gen double lnR = ln(R)
 gen double lnP = ln(P)
@@ -368,8 +257,10 @@ gen str24 ruolo = cond(missing(cohort), "esclusa", cond(cohort == 0, cond(matche
 sort cohort zona
 list zona ruolo e1 e2 e3 eany x_dlnR zona_descr, noobs sep(0) abbrev(12)
 export delimited zona ruolo cohort e1 e2 e3 eany matched x_lnR x_dlnR x_lnP sh_foreign sh_a65 sh_fam1 zona_descr ///
-    using "$TAB/m4_groups.csv", replace
+    using "$TAB/m4_groups`TAG'.csv", replace
 restore
+* pannello delle zone salvato per i controlli del modulo 19b (con il suffisso della variante)
+save "$WORK/m4_zone_panel`TAG'.dta", replace
 
 *------------------------------------------------------------------------------*
 * 3. Stime per zona (semestri)
@@ -382,22 +273,36 @@ gen byte D = cohort > 0 & !missing(cohort) & t >= cohort - 1e-6
 quietly regress lnR D i.zid i.tid if s_all, vce(cluster zid)
 di as txt "  (0) TWFE classico, ln affitto: " as res %8.4f _b[D] as txt "  (p cluster = " ///
     %5.3f 2*ttail(e(df_r), abs(_b[D]/_se[D])) ")"
-frame post m4cs ("(0) TWFE classico, tutte le mai esposte (solo confronto)") ("lnR") (_b[D]) (.) (.) (.) (.) (.)
+local tq = invttail(e(df_r), 0.025)
+local b0 = _b[D]
+local se0 = _se[D]
+local p0 = 2*ttail(e(df_r), abs(_b[D]/_se[D]))
+quietly summarize tid
+local tm0 = r(min)
+quietly count if s_all & tid == `tm0' & cohort > 0
+local n0t = r(N)
+quietly count if s_all & tid == `tm0' & cohort == 0
+local n0c = r(N)
+frame post m4cs ("(0) TWFE classico, tutte le mai esposte (solo confronto)") ("lnR") (`b0') ///
+    (`p0') (.) (.) (`n0t') (`n0c') (`b0' - `tq'*`se0') (`b0' + `tq'*`se0') (.) (.) ///
+    ("errori cluster per zona (inaffidabili con poche trattate)") ("") ("")
 
-m4run lnR, unit(zid) time(t) cohort(cohort) sample(s_match) step(0.5) tmax(2025.5) ///
+m4run lnR, unit(zid) time(t) cohort(cohort) sample(s_match) step(0.5) tmax($M4_TLAST) ///
     spec("(1) PRINCIPALE: controlli abbinati + non ancora trattate") perms($M4_PERMS) esframe(es_rent)
-m4run lnR, unit(zid) time(t) cohort(cohort) sample(s_all) step(0.5) tmax(2025.5) ///
+m4run lnR, unit(zid) time(t) cohort(cohort) sample(s_all) step(0.5) tmax($M4_TLAST) ///
     spec("(2) tutte le zone mai esposte + non ancora trattate") perms($M4_PERMS)
+if !$M4_LIGHT {
 m4run lnR, unit(zid) time(t) cohort(cohort) sample(s_nyt) step(0.5) tmax(2024.5) ///
     spec("(3) solo non ancora trattate (zone delle tratte successive)") perms($M4_PERMS)
-m4run lnP, unit(zid) time(t) cohort(cohort) sample(s_match) step(0.5) tmax(2025.5) ///
+}
+m4run lnP, unit(zid) time(t) cohort(cohort) sample(s_match) step(0.5) tmax($M4_TLAST) ///
     spec("(4) prezzi di compravendita, controlli abbinati") perms($M4_PERMS) esframe(es_price)
 
 *------------------------------------------------------------------------------*
 * 4. Stime per NIL (anni): altre dinamiche di gentrificazione
 *------------------------------------------------------------------------------*
 * Esiti per NIL: cancellazioni e iscrizioni (DS205/DS1600/DS1596, 2012-2024) e,
-* dal modulo 03c (ds27, ds1440), composizione e migrazione netta per eta' per
+* dal modulo 03c (ds27, ds1440), composizione e variazione netta di coorte per eta' per
 * coorte (2008-2024), che comprende anche i traslochi dentro Milano.
 * Controlli: (5) tutti i NIL mai esposti + non ancora trattati;
 *            (6) per ogni NIL trattato i 3 NIL mai esposti piu' simili nella
@@ -469,9 +374,12 @@ gen str24 ruolo = cond(missing(cohort), "escluso", cond(cohort == 0, cond(matche
 tab ruolo
 restore
 gen double t = year
+* pannello dei NIL salvato per i controlli del modulo 19b (con il suffisso della variante)
+save "$WORK/m4_nil_panel`TAG'.dta", replace
 local NP = max(199, floor($M4_PERMS/2))
 local NILY "r_ac r_in lnpop"
 if `has27' local NILY "r_ac r_in nm_c2029 nm_c3039 nm_c0009 sh_g2539 sh_hi sh_for27 sh_head35 lnpop"
+if $M4_LIGHT local NILY "r_ac"
 foreach v of local NILY {
     m4run `v', unit(nil) time(t) cohort(cohort) sample(s_nil) step(1) tmax(2024) prewin(8) ///
         spec("(5) NIL: mai esposti + non ancora trattati") perms(`NP') esframe(es_`v')
@@ -479,7 +387,8 @@ foreach v of local NILY {
         spec("(6) NIL: abbinati per composizione + non ancora trattati") perms(`NP')
 }
 
-frame m4cs: export delimited using "$TAB/m4_cs_results.csv", replace
+frame m4cs: export delimited using "$TAB/m4_cs_results`TAG'.csv", replace
+if $M4_LIGHT exit
 
 *------------------------------------------------------------------------------*
 * 5. Event study (zone, semestri) e grafici
@@ -488,7 +397,7 @@ foreach o in rent price {
     frame es_`o' {
         gen double e = round((t - g)/0.5)       // semestri dall'apertura (0 = primo semestre trattato)
         collapse (mean) att [aw = nT], by(e)
-        keep if inrange(e, -12, 5)
+        keep if inrange(e, -12, 6)
         gen str8 outcome = "`o'"
         tempfile e_`o'
         save `e_`o''
@@ -498,15 +407,6 @@ preserve
 use `e_rent', clear
 append using `e_price'
 export delimited using "$TAB/m4_cs_event.csv", replace
-foreach o in rent price {
-    local lab = cond("`o'" == "rent", "ln affitto", "ln prezzo")
-    twoway (connected att e if outcome == "`o'", lcolor("37 106 191") mcolor("37 106 191") msize(small)), ///
-        yline(0, lcolor(gs8)) xline(-0.5, lcolor("230 100 50") lpattern(dash)) ///
-        xlabel(-12(2)5) xtitle("Semestri dall'apertura della propria tratta") ///
-        ytitle("Differenza trattate - controlli, `lab'") ///
-        title("M4: `lab', zone servite vs controlli abbinati e non ancora trattate", size(medsmall)) ///
-        legend(off) graphregion(color(white)) ///
-        note("Callaway e Sant'Anna, base = semestre prima dell'apertura (-1). Media pesata dei gruppi di apertura.", size(vsmall))
-    graph export "$FIG/m4_cs_event_`o'.png", replace width(2400)
-}
+* i grafici dell'event study, con bande di permutazione e numero di aree per
+* semestre, sono prodotti dal modulo 19h
 restore

@@ -1,0 +1,9 @@
+spec,outcome,metodo,att,se,p,nT,nC,ci_lo,ci_hi,metodo_inf,periodi,att_pct
+"(DR) centroide entro 1 km, controlli oltre 2 km",lnR,sdid,-.0426174,.0311591,.1713949561586075,9,15,-.103689236,.018454436,errore standard placebo (500 repliche),2014S2-2026S1,-4.172204291533077
+"(DR) centroide entro 1 km, controlli oltre 2 km",lnR,did,-.1591196,.0510173,.0018150651169429,9,15,-.259113508,-.059125692,errore standard placebo (500 repliche),2014S2-2026S1,-14.71056532949462
+"(DRnb) centroide entro 1 km, controlli oltre 1 km (senza fascia)",lnR,sdid,-.0363284,.0284485,.2016063984432881,9,28,-.09208746,.01943066,errore standard placebo (500 repliche),2014S2-2026S1,-3.567644237838175
+"(DRnb) centroide entro 1 km, controlli oltre 1 km (senza fascia)",lnR,did,-.1357863,.0475687,.0043100507214653,9,28,-.229020952,-.042551648,errore standard placebo (500 repliche),2014S2-2026S1,-12.69708211089446
+"(DRna) come DR, solo zone dove la M4 e' la stazione piu' vicina",lnR,sdid,-.0211564,.0461141,.6463894609056482,3,15,-.111540036,.069227236,errore standard placebo (500 repliche),2014S2-2026S1,-2.093417330090541
+"(DRna) come DR, solo zone dove la M4 e' la stazione piu' vicina",lnR,did,-.0922467,.0643846,.1519307852814023,3,15,-.218440516,.033947116,errore standard placebo (500 repliche),2014S2-2026S1,-8.811983904181908
+"(MB) principale 500 m, controlli mai esposti oltre 2 km",lnR,sdid,-.0298578,.0360269,.4072379274919314,5,15,-.100470524,.040754924,errore standard placebo (500 repliche),2014S2-2026S1,-2.941645928454417
+"(MB) principale 500 m, controlli mai esposti oltre 2 km",lnR,did,-.122511,.0568454,.031149222630593,5,15,-.233927984,-.011094016,errore standard placebo (500 repliche),2014S2-2026S1,-11.53038267679463

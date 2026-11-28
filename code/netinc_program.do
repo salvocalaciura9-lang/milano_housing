@@ -1,7 +1,7 @@
 *==============================================================================*
 * netinc_program.do
 * Programma netinc: reddito netto di un reddito complessivo IRPEF per anno
-* d'imposta (2007-2024) e tipo di detrazione (dip, pen, aut, nod).
+* d'imposta (2004-2024) e tipo di detrazione (dip, pen, aut, nod).
 * Usato dai moduli 18 e 18b. Parametri e fonti: vedi intestazione di 18b.
 *==============================================================================*
 capture program drop netinc
@@ -53,6 +53,26 @@ program define netinc
             cond(`r'<=50000, 500*(50000-`r')/22000, 0))) + ///
             50*(`r'>11000 & `r'<=17000) if `y' >= 2022
     }
+    * 2004-2006: riforma Tremonti (primo modulo L. 289/2002, secondo modulo L. 311/2004).
+    * Niente detrazioni per tipo di reddito: deduzione dal reddito ("no tax area")
+    * D x (26.000 + D - R) / 26.000, con il rapporto tra 0 e 1;
+    * D = 7.500 dipendenti, 7.000 pensionati, 4.500 autonomi (3.000 + maggiorazione);
+    * scenario "nod": nessuna deduzione. L'imposta si calcola sul reddito dedotto.
+    tempvar ded b
+    local D 0
+    if "`type'" == "dip" local D 7500
+    if "`type'" == "pen" local D 7000
+    if "`type'" == "aut" local D 4500
+    gen double `ded' = cond(`y' < 2007, `D'*min(max((26000 + `D' - `r')/26000, 0), 1), 0)
+    gen double `b' = max(`r' - `ded', 0)
+    * 2003-2004: 23/29/31/39/45% (15.000 / 29.000 / 32.600 / 70.000)
+    replace `g' = .23*min(`b',15000) + .29*max(min(`b',29000)-15000,0) + ///
+        .31*max(min(`b',32600)-29000,0) + .39*max(min(`b',70000)-32600,0) + ///
+        .45*max(`b'-70000,0) if `y' <= 2004
+    * 2005-2006: 23/33/39% (26.000 / 33.500 / 100.000) + contributo del 4% oltre 100.000
+    replace `g' = .23*min(`b',26000) + .33*max(min(`b',33500)-26000,0) + ///
+        .39*max(min(`b',100000)-33500,0) + .43*max(`b'-100000,0) if inrange(`y',2005,2006)
+    replace `d' = 0 if `y' < 2007
     gen double `irp' = max(`g' - `d', 0)
     * bonus in busta paga (solo dipendenti, se l'imposta lorda supera la detrazione)
     gen double `bon' = 0
@@ -73,10 +93,13 @@ program define netinc
     }
     * addizionale regionale Lombardia (aliquote per scaglioni)
     gen double `areg' = .009*min(`r',15493.71) + .013*max(min(`r',30987.41)-15493.71,0) + ///
-        .014*max(`r'-30987.41,0) if `y' <= 2011
+        .014*max(`r'-30987.41,0) if `y' <= 2010
+    * (2004-2006: la base dell'addizionale non toglie la deduzione no tax area:
+    * nei dati MEF il "reddito imponibile addizionale" 2004 e' 24,4 mld contro
+    * 19,4 mld di imponibile IRPEF)
     replace `areg' = .0123*min(`r',15000) + .0158*max(min(`r',28000)-15000,0) + ///
         .0172*max(min(`r',55000)-28000,0) + .0173*max(min(`r',75000)-55000,0) + ///
-        .0174*max(`r'-75000,0) if inrange(`y',2012,2022)
+        .0174*max(`r'-75000,0) if inrange(`y',2011,2022)
     replace `areg' = .0123*min(`r',15000) + .0158*max(min(`r',28000)-15000,0) + ///
         .0172*max(min(`r',50000)-28000,0) + .0173*max(`r'-50000,0) if `y' >= 2023
     * addizionale comunale Milano (soglia di esenzione: sopra la soglia si paga su tutto)
@@ -91,10 +114,10 @@ program define netinc
     replace `areg' = 0 if `irp' <= 0
     replace `acom' = 0 if `irp' <= 0
     gen double `generate' = `R' - `irp' - `areg' - `acom' + `bon'
-    * regole fiscali implementate dal 2007 (TUIR riformato dalla Finanziaria 2007)
-    replace `generate' = . if `y' < 2007
-    if "`irpout'" != "" gen double `irpout' = `irp' if `y' >= 2007
-    if "`regout'" != "" gen double `regout' = `areg' if `y' >= 2007
-    if "`comout'" != "" gen double `comout' = `acom' if `y' >= 2007
+    * regole fiscali implementate dal 2004
+    replace `generate' = . if `y' < 2004
+    if "`irpout'" != "" gen double `irpout' = `irp' if `y' >= 2004
+    if "`regout'" != "" gen double `regout' = `areg' if `y' >= 2004
+    if "`comout'" != "" gen double `comout' = `acom' if `y' >= 2004
     }
 end
