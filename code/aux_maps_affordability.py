@@ -10,9 +10,12 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = sys.argv[1]
 
 a = pd.read_stata(f'{ROOT}/data/work/aff_nil_year.dta')
+d205 = pd.read_stata(f'{ROOT}/data/work/ds205_nil_year.dta')
 w = a[a.year.between(2015, 2024)]
-cnt = w.groupby('nil').A60.count()
-panel = set(cnt[cnt == 10].index.astype(int))
+# Campione della mappa: affitto osservato nel 2015 e nel 2024 e almeno 500 residenti in entrambi gli anni
+has = lambda yr: set(w[(w.year == yr) & w.A60.notna()].nil.astype(int))
+big = lambda yr: set(d205[(d205.year == yr) & (d205['pop'] >= 500)].nil.astype(int))
+panel = has(2015) & has(2024) & big(2015) & big(2024)
 val = {yr: {int(r.nil): float(r.A60) for r in w[(w.year == yr) & w.nil.isin(panel)].itertuples()} for yr in (2015, 2024)}
 share = {yr: (sum(v > 0.40 for v in val[yr].values()), len(val[yr])) for yr in val}
 
@@ -77,14 +80,14 @@ LW = 440
 def lx(v): return 20 + (v - 0.20) / 0.70 * LW
 grad = ''.join(f'<stop offset="{(v-0.20)/0.70:.4f}" stop-color="{color(v)}"/>' for v in [0.20 + i * 0.01 for i in range(71)])
 ticks = ''.join(f'<line x1="{lx(v):.1f}" x2="{lx(v):.1f}" y1="34" y2="40" stroke="#555"/><text x="{lx(v):.1f}" y="54" text-anchor="middle">{int(v*100)}%</text>' for v in (0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9))
-legend = f'''<svg width="{LW+260}" height="66" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#333">
+legend = f'''<svg width="{LW+300}" height="66" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#333">
 <defs><linearGradient id="g">{grad}</linearGradient></defs>
 <rect x="20" y="16" width="{LW}" height="18" fill="url(#g)"/>
 {ticks}
 <line x1="{lx(0.40):.1f}" x2="{lx(0.40):.1f}" y1="10" y2="40" stroke="#111" stroke-width="2"/>
 <text x="{lx(0.40):.1f}" y="9" text-anchor="middle" font-weight="bold">40% OECD threshold</text>
 <rect x="{LW+50}" y="16" width="18" height="18" fill="{NODATA}"/>
-<text x="{LW+74}" y="30">Excluded / no OMI data</text>
+<text x="{LW+74}" y="30">Excluded: under 500 residents or no rent</text>
 <rect x="{LW+50}" y="40" width="18" height="18" fill="#f0a078" stroke="#1f1f1f" stroke-width="1.4"/>
 <text x="{LW+74}" y="54">Outlined: above 40%</text>
 </svg>'''
@@ -103,7 +106,7 @@ h1{font-size:20px;margin:0 0 4px}.lead{font-size:13px;color:#444;margin:0 0 14px
 
 NOTE = ('Index: annual OMI rent of a 60 m&sup2; dwelling (midpoint, civil dwellings in normal condition, area-weighted from OMI zones to NILs) '
         'divided by the median net income of Milanese taxpayers (EUR 17,370 in 2015; EUR 21,559 in 2024). Colours use the same scale in both years. '
-        'Grey: NILs with fewer than 500 residents in 2019 or without OMI rent in every year 2015&ndash;2024. '
+        'Grey: NILs with fewer than 500 residents in 2015 or in 2024, or without OMI rent in either year. '
         'Source: authors&rsquo; elaboration on OMI (Agenzia delle Entrate) and Comune di Milano data.')
 
 def page(body):
